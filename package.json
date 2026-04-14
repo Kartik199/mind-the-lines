@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "node fetch-posts.js && hugo --gc --minify",
-    "dev": "node fetch-posts.js && hugo server -D"
+  "fetch": "node fetch-posts.js",
+  "build": "npm run fetch && hugo --gc --minify",
+  "dev": "npm run fetch && hugo server -D"
   },
   "keywords": [],
   "author": "",
