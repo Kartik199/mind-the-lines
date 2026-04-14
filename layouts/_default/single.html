@@ -1,0 +1,22 @@
+{{ define "main" }}
+<article class="py-16 md:py-24">
+    {{/* Hero Header Area */}}
+    <header class="reading-container mb-16">
+        <h1 class="title">{{ .Title }}</h1>
+        {{ if .Params.subtitle }}
+            <p class="text-xl md:text-2xl text-muted font-serif italic mt-4">{{ .Params.subtitle }}</p>
+        {{ end }}
+        
+        <div class="flex items-center gap-4 mt-8 text-sm text-muted uppercase tracking-widest font-sans">
+            <span>{{ .Date.Format "Jan 02, 2006" }}</span>
+            <span>•</span>
+            <span>{{ .ReadingTime }} min read</span>
+        </div>
+    </header>
+
+    {{/* The Content Body */}}
+    <div class="reading-container prose">
+        {{ .Content }}
+    </div>
+</article>
+{{ end }}

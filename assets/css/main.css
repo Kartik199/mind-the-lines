@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  /* Editorial Fonts */
+  --font-serif: "Merriweather", serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  
+  /* Brand Colors */
+  --color-ink: #121212;
+  --color-paper: #ffffff;
+  --color-muted: #575757;
+  --color-accent: #2d3748;
+}
+
+@layer base {
+  body {
+    @apply font-sans text-ink bg-paper antialiased;
+  }
+
+  /* The "Reading Zone" Container */
+  .reading-container {
+    @apply mx-auto w-full max-w-[720px] px-6 md:px-0;
+  }
+
+  /* Immersive Typography Logic */
+  .prose {
+    @apply font-serif text-[18px] md:text-[20px] leading-[1.85] text-ink;
+  }
+
+  /* Distinctive Headers */
+  h1 { @apply font-serif text-4xl md:text-5xl font-bold tracking-tight leading-tight mb-4; }
+  h2 { @apply font-serif text-2xl md:text-3xl font-bold mt-12 mb-6; }
+  
+  /* Blockquote styling for "Lines that Stayed" */
+  blockquote {
+    @apply border-l-4 border-ink pl-6 italic my-10 text-muted;
+  }
+
+  /* Optimized paragraph spacing */
+  p { @apply mb-8; }
+}

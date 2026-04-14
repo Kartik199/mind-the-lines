@@ -1,0 +1,19 @@
+{
+  "name": "mind-the-lines",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.2.2",
+    "postcss": "^8.5.9",
+    "postcss-cli": "^11.0.1",
+    "tailwindcss": "^4.2.2"
+  }
+}
