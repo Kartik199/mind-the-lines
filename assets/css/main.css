@@ -13,6 +13,24 @@
 }
 
 @layer base {
+  .prose a {
+    @apply text-ink underline decoration-gray-300 underline-offset-4 transition-all hover:decoration-ink;
+  }
+  figure img {
+    @apply max-w-full h-auto block;
+  }
+  iframe {
+    @apply hover:shadow-2xl transition-shadow duration-500;
+  }
+  .group img {
+    filter: grayscale(100%);
+    transition: filter 0.7s ease-in-out, transform 0.7s ease-in-out;
+  }
+
+  .group:hover img {
+    filter: grayscale(0%);
+    transform: scale(1.05);
+  }
   body {
     @apply font-sans text-ink bg-paper antialiased;
   }
@@ -35,7 +53,10 @@
   blockquote {
     @apply border-l-4 border-ink pl-6 italic my-10 text-muted;
   }
-
+.tamil-text {
+  font-family: 'Hind Madurai', sans-serif; /* A beautiful, readable Tamil font */
+  line-height: 1.6;
+}
   /* Optimized paragraph spacing */
   p { @apply mb-8; }
 }

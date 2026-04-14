@@ -30,3 +30,21 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Data fetches
+data/posts.json
+content/posts/*.md
+
+# Build and Temp files
+public/
+resources/_gen/
+.hugo_build.lock
+
+# Node dependencies
+node_modules/
+dist/
+
+# Sanity Studio specific (nested)
+**/studio/mind-the-lines/node_modules
+**/studio/mind-the-lines/.sanity
+**/studio/mind-the-lines/dist

@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node fetch-posts.js && hugo --gc --minify",
+    "dev": "node fetch-posts.js && hugo server -D"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@sanity/client": "^7.21.0",
     "@tailwindcss/postcss": "^4.2.2",
     "postcss": "^8.5.9",
     "postcss-cli": "^11.0.1",

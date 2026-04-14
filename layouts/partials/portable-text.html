@@ -1,0 +1,68 @@
+{{ $outer := . }}
+{{ range . }}
+    {{ if eq ._type "block" }}
+        <p class="mb-8">
+            {{ $markDefs := .markDefs }}
+            {{ range .children }}
+                {{ $text := .text }}
+                {{ $currentMark := index .marks 0 }}
+                
+                {{/* Check if this child has a Mark Definition (Link) */}}
+                {{ $link := "" }}
+                {{ range $markDefs }}
+                    {{ if eq ._key $currentMark }}
+                        {{ $link = .href }}
+                    {{ end }}
+                {{ end }}
+
+                {{ if $link }}
+                    {{/* It's a real link: make it clickable and visible */}}
+                    <a href="{{ $link | safeURL }}" target="_blank" rel="noopener" class="text-ink underline decoration-gray-300 decoration-1 underline-offset-4 hover:decoration-ink transition-all">
+                        {{ $text }}
+                    </a>
+                {{ else if in .marks "strong" }}
+                    <strong class="font-bold">{{ $text }}</strong>
+                {{ else if in .marks "em" }}
+                    <em class="italic">{{ $text }}</em>
+                {{ else }}
+                    {{/* Regular text: non-clickable */}}
+                    {{ $text }}
+                {{ end }}
+            {{ end }}
+        </p>
+
+    {{ else if eq ._type "inlineQuote" }}
+        <blockquote class="my-12 border-l-4 border-ink pl-8 py-2">
+            <p class="font-serif text-2xl italic mb-4">"{{ .text }}"</p>
+            {{ if .author }}
+                <cite class="text-xs uppercase tracking-widest text-muted">— {{ .author }}</cite>
+            {{ end }}
+        </blockquote>
+
+   {{/* 2. Handling YouTube Embeds */}}
+    {{ else if eq ._type "youtube" }}
+        <div class="my-16 aspect-video w-full bg-gray-100 rounded-sm overflow-hidden shadow-lg">
+            {{/* Logic to extract ID from youtube.com/watch?v=ID or youtu.be/ID */}}
+            {{ $vid := "" }}
+            {{ if in .url "v=" }}
+                {{/* For standard watch?v= URLs */}}
+                {{ $parts := split .url "v=" }}
+                {{ $vid = index $parts 1 }}
+            {{ else }}
+                {{/* For youtu.be/ short URLs */}}
+                {{ $parts := split .url "/" }}
+                {{/* We take the last element of the split array */}}
+                {{ $vid = index $parts (sub (len $parts) 1) }}
+            {{ end }}
+            
+            <iframe 
+                class="w-full h-full" 
+                src="{{ printf "https://www.youtube.com/embed/%s" $vid | safeURL }}" 
+                title="YouTube video player"
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
+    {{ end }}
+{{ end }}

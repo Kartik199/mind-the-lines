@@ -1,22 +1,28 @@
 {{ define "main" }}
-<article class="py-16 md:py-24">
-    {{/* Hero Header Area */}}
+{{ $post := index (where $.Site.Data.posts "slug" .Slug) 0 }}
+
+<article class="pb-24">
+    {{ if $post.heroImageUrl }}
+    <div class="w-full h-[70vh] relative overflow-hidden bg-ink mb-20">
+        <img src="{{ $post.heroImageUrl }}" class="w-full h-full object-cover opacity-90" alt="{{ $post.title }}">
+        <div class="absolute inset-0 bg-linear-to-t from-paper/20 to-transparent"></div>
+    </div>
+    {{ end }}
+
     <header class="reading-container mb-16">
-        <h1 class="title">{{ .Title }}</h1>
-        {{ if .Params.subtitle }}
-            <p class="text-xl md:text-2xl text-muted font-serif italic mt-4">{{ .Params.subtitle }}</p>
-        {{ end }}
-        
-        <div class="flex items-center gap-4 mt-8 text-sm text-muted uppercase tracking-widest font-sans">
-            <span>{{ .Date.Format "Jan 02, 2006" }}</span>
-            <span>•</span>
-            <span>{{ .ReadingTime }} min read</span>
-        </div>
+        <span class="text-muted text-[10px] uppercase tracking-[0.4em] font-bold mb-4 block">{{ $post.category | replace "-" " " }}</span>
+        <h1 class="text-5xl md:text-6xl">{{ $post.title }}</h1>
     </header>
 
-    {{/* The Content Body */}}
     <div class="reading-container prose">
-        {{ .Content }}
+        {{ partial "portable-text.html" $post.body }}
     </div>
+
+    {{ if $post.oneLineTake }}
+    <footer class="reading-container mt-24 border-t border-gray-100 pt-12">
+        <h4 class="text-[10px] uppercase tracking-widest font-bold text-muted mb-4">The One-Line Take</h4>
+        <p class="font-serif italic text-2xl text-ink leading-relaxed">"{{ $post.oneLineTake }}"</p>
+    </footer>
+    {{ end }}
 </article>
 {{ end }}

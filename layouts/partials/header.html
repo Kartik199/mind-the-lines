@@ -1,10 +1,31 @@
-<header class="w-full py-8 border-b border-gray-100">
+<nav class="w-full py-8 bg-paper/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100">
     <div class="reading-container flex justify-between items-center">
-        <a href="/" class="text-xl font-serif font-bold tracking-tight">
-            Mind the Lines
-        </a>
-        <button id="drawer-trigger" class="text-sm uppercase tracking-widest font-semibold hover:text-muted transition-colors">
-            Menu
+        <a href="/" class="font-serif text-2xl font-bold tracking-tighter">M.T.L</a>
+        
+        <button id="drawer-trigger" class="flex items-center gap-3 group cursor-pointer focus:outline-none">
+            <span class="text-[10px] uppercase tracking-[0.2em] font-bold text-muted group-hover:text-ink transition-colors">The Mind Drawer</span>
+            <div class="w-6 h-4 flex flex-col justify-between">
+                <span class="w-full h-[1.5px] bg-ink"></span>
+                <span class="w-3/4 h-[1.5px] bg-ink self-end"></span>
+            </div>
         </button>
     </div>
-</header>
+</nav>
+
+<div id="mind-drawer" class="fixed inset-0 z-[60] invisible pointer-events-none transition-all">
+    <div id="drawer-overlay" class="absolute inset-0 bg-ink/40 backdrop-blur-sm opacity-0 transition-opacity duration-500"></div>
+    
+    <div id="drawer-content" class="absolute right-0 top-0 h-full w-full max-w-sm bg-paper shadow-2xl translate-x-full transition-transform duration-500 ease-in-out p-12 flex flex-col">
+        <button id="drawer-close" class="self-end text-3xl font-light hover:rotate-90 transition-transform duration-300">&times;</button>
+        
+        <div class="mt-12">
+            <h3 class="text-[10px] uppercase tracking-[0.3em] font-bold text-muted mb-10">Categories</h3>
+            <ul class="space-y-8 font-serif text-3xl">
+                <li><a href="/categories/power-society" class="hover:italic transition-all block">Power & Society</a></li>
+                <li><a href="/categories/cinema-narrative" class="hover:italic transition-all block">Cinema as Narrative</a></li>
+                <li><a href="/categories/books-thought" class="hover:italic transition-all block">Books & Thought</a></li>
+                <li><a href="/categories/chennai-observed" class="hover:italic transition-all block">Chennai Observed</a></li>
+            </ul>
+        </div>
+    </div>
+</div>

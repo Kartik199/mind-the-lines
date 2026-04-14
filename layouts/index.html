@@ -1,0 +1,28 @@
+{{ define "main" }}
+<header class="reading-container pt-24 pb-16">
+    <h1 class="text-ink">Mind the Lines</h1>
+    <p class="text-muted text-xl font-serif italic">Musings on Power, Society, and Narrative.</p>
+</header>
+
+<section class="reading-container space-y-32 pb-32">
+    {{ range $.Site.Data.posts }}
+    <article class="group cursor-pointer">
+        <a href="/posts/{{ .slug }}/" class="block">
+            {{ if .heroImageUrl }}
+            <div class="w-full aspect-[16/9] overflow-hidden rounded-sm mb-8">
+                <img src="{{ .heroImageUrl }}" alt="{{ .title }}" 
+                     class="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-1000 transition-all duration-1000 ease-in-out scale-105 group-hover:scale-100">
+            </div>
+            {{ end }}
+
+            <div class="space-y-4">
+                <span class="text-[10px] uppercase tracking-[0.3em] font-bold text-muted">{{ .category | replace "-" " " }}</span>
+                <h2 class="m-0 group-hover:text-muted transition-colors leading-tight">{{ .title }}</h2>
+                <p class="text-muted line-clamp-3">{{ .summary }}</p>
+                <span class="inline-block pt-4 border-b border-ink text-xs font-bold uppercase tracking-widest">Read Story</span>
+            </div>
+        </a>
+    </article>
+    {{ end }}
+</section>
+{{ end }}
