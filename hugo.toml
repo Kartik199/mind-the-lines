@@ -1,3 +1,23 @@
-baseURL = 'https://example.org/'
+baseURL = '/'  # Changed from Netlify URL to relative for local dev stability
 languageCode = 'en-us'
-title = 'My New Hugo Site'
+title = 'Mind the Lines'
+
+[taxonomies]
+  category = "categories"
+  tag = "tags"
+
+[permalinks]
+  # This ensures your category URLs are predictable and clean
+  categories = "/categories/:slug/"
+
+[params]
+  description = "A journal of cinema, society, and the lines that stay."
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true # Required for Sanity HTML/Portable Text rendering
+
+[frontmatter]
+  # Helps Hugo handle special characters in titles more gracefully
+  removePathAccents = true

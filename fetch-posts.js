@@ -1,49 +1,67 @@
-const fs = require('fs');
 const { createClient } = require('@sanity/client');
-
-require('dotenv').config(); 
+const fs = require('fs');
+const path = require('path');
+const yaml = require('js-yaml');
+require('dotenv').config();
 
 const client = createClient({
   projectId: process.env.SANITY_PROJECT_ID,
   dataset: process.env.SANITY_DATASET || 'production',
-  token: process.env.SANITY_API_TOKEN,
   useCdn: false,
   apiVersion: '2024-03-01',
+  token: process.env.SANITY_API_TOKEN,
 });
 
 async function fetchPosts() {
-    if (!process.env.SANITY_PROJECT_ID) {
-        console.error("❌ ERROR: SANITY_PROJECT_ID is missing!");
-        process.exit(1); 
-    }
-  const query = `*[_type == "post"]{
+  const query = `*[_type == "post"] {
     title,
     "slug": slug.current,
-    summary,
-    category,
-    "heroImageUrl": heroImage.asset->url,
+    publishedAt,
+    "categories": categories[]->{
+      "title": title,
+      "slug": slug.current
+    },
+    "tags": tags[]->title,
     body,
-    oneLineTake,
-    linesThatStayed
+    heroImageUrl,
+    oneLineTake
   }`;
-  
-  const posts = await client.fetch(query);
-  
-  if (!fs.existsSync('./data')) fs.mkdirSync('./data');
-  fs.writeFileSync('./data/posts.json', JSON.stringify(posts, null, 2));
 
-  if (!fs.existsSync('./content/posts')) fs.mkdirSync('./content/posts', { recursive: true });
-  
-  posts.forEach(post => {
-    const content = `---
-title: "${post.title}"
-slug: "${post.slug}"
-layout: "single"
----`;
-    fs.writeFileSync(`./content/posts/${post.slug}.md`, content);
-  });
+  try {
+    const posts = await client.fetch(query);
+    console.log(`📦 Found ${posts.length} posts in Sanity.`);
 
-  console.log('Data synced and Hugo nodes created.');
+    // 1. Save rich data for the templates
+    const dataDir = path.join(__dirname, 'data');
+    if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
+    fs.writeFileSync(path.join(dataDir, 'posts.json'), JSON.stringify(posts, null, 2));
+
+    // 2. Generate Markdown for Hugo's routing engine
+    const postsDir = path.join(__dirname, 'content', 'posts');
+    if (!fs.existsSync(postsDir)) fs.mkdirSync(postsDir, { recursive: true });
+
+    posts.forEach(post => {
+      const fileName = `${post.slug}.md`;
+      const filePath = path.join(postsDir, fileName);
+
+      const frontmatterObj = {
+        title: post.title,
+        date: post.publishedAt || new Date().toISOString(),
+        // CRITICAL: Hugo needs a flat list of strings to generate category pages
+        categories: post.categories ? post.categories.map(c => c.title) : [],
+        tags: post.tags || [],
+        slug: post.slug
+      };
+
+      const frontmatter = `---\n${yaml.dump(frontmatterObj)}---\n`;
+      fs.writeFileSync(filePath, frontmatter);
+    });
+
+    console.log('✅ Data synced. Category pages should now generate.');
+  } catch (error) {
+    console.error('❌ Error:', error);
+    process.exit(1);
+  }
 }
 
 fetchPosts();

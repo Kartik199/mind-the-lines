@@ -28,18 +28,10 @@ export default defineType({
       validation: (Rule) => Rule.required().max(200),
     }),
     defineField({
-      name: 'category',
-      title: 'Category',
-      type: 'string',
-      options: {
-        list: [
-          {title: 'Power & Society', value: 'power-society'},
-          {title: 'Cinema as Narrative', value: 'cinema-narrative'},
-          {title: 'Books & Thought', value: 'books-thought'},
-          {title: 'Chennai Observed', value: 'chennai-observed'},
-        ],
-      },
-      validation: (Rule) => Rule.required(),
+        name: 'categories',
+        title: 'Categories',
+        type: 'array',
+        of: [{type: 'reference', to: [{type: 'category'}]}],
     }),
 
     /* 2. Visuals */
