@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "fetch": "node fetch-posts.js",
-  "build": "npm run fetch && hugo --gc --minify",
-  "dev": "npm run fetch && hugo server -D"
+    "fetch": "node fetch-posts.js",
+    "build": "npm run fetch && hugo --gc --minify",
+    "dev": "npm run fetch && hugo server -D"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +15,7 @@
   "dependencies": {
     "@sanity/client": "^7.21.0",
     "@tailwindcss/postcss": "^4.2.2",
+    "dotenv": "^17.4.2",
     "postcss": "^8.5.9",
     "postcss-cli": "^11.0.1",
     "tailwindcss": "^4.2.2"

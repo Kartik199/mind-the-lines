@@ -1,9 +1,11 @@
 const fs = require('fs');
 const { createClient } = require('@sanity/client');
 
+require('dotenv').config(); 
+
 const client = createClient({
-  projectId: 'aa1115mj', 
-  dataset: 'production',
+  projectId: process.env.SANITY_PROJECT_ID,
+  dataset: process.env.SANITY_DATASET || 'production',
   useCdn: false,
   apiVersion: '2024-03-01',
 });
