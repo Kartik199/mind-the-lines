@@ -14,7 +14,9 @@ const client = createClient({
 });
 
 const builder = imageUrlBuilder.default ? imageUrlBuilder.default(client) : imageUrlBuilder(client);
-function urlFor(source) { return builder.image(source); }
+function urlFor(source) { 
+    return builder.image(source).auto('format'); 
+}
 
 function processChildren(block) {
     if (!block.children) return '';
@@ -39,9 +41,25 @@ function blocksToMarkdown(blocks) {
             if (block.style === 'blockquote') return `\n> ${text}\n`;
             return text;
         }
+        
+        if (block._type === 'inlineQuote') {
+            const authorMarkup = block.author ? `<cite class="quote-author">— ${block.author}</cite>` : '';
+            return `\n<blockquote class="editorial-quote"><p class="quote-text">"${block.text}"</p>${authorMarkup}</blockquote>\n`;
+        }
+
         if (block._type === 'image') {
-            const imageUrl = urlFor(block.asset).width(1200).fit('max').auto('format').url();
-            return `\n\n![Blog Image](${imageUrl})\n\n`;
+            // CONTROL: Resize to 800px wide, maintain aspect ratio, no cropping
+            const imageUrl = urlFor(block.asset)
+                .width(800) 
+                .fit('max')
+                .url();
+
+            const captionMarkup = block.caption ? `<figcaption class="img-caption">${block.caption}</figcaption>` : '';
+            return `
+<figure class="editorial-figure">
+    <img src="${imageUrl}" alt="${block.alt || 'Blog Image'}" loading="lazy" />
+    ${captionMarkup}
+</figure>`;
         }
         return '';
     }).join('\n\n');
@@ -76,9 +94,9 @@ async function fetchPosts() {
 
             fs.writeFileSync(filePath, frontmatter + '\n' + blocksToMarkdown(post.body));
         });
-        console.log('✅ Success: Data mapped from Sanity schema.');
+        console.log('✅ Success: Images resized with aspect-ratio preservation.');
     } catch (error) {
         console.error('❌ Error:', error);
     }
-}
+} 
 fetchPosts();

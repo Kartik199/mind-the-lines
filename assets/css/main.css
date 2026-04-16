@@ -1,83 +1,147 @@
-@import "tailwindcss";
+/* 1. Imports must remain at the top */
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
+@import "tailwindcss";
 
 @theme {
-    --color-paper: #FBFAF5;
+    --color-paper: #F5F2E9;
     --color-ink: #1A1A1A;
     --color-muted: #717171;
-    --font-serif: "Lora", "Times New Roman", serif;
+    --font-serif: "Lora", "Georgia", "Times New Roman", serif;
     --spacing-reading: 68ch;
-    --spacing-grid: 1200px;
+    --spacing-grid: 1400px;
+
+    --animate-reveal: reveal 0.8s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+
+    @keyframes reveal {
+        from {
+            opacity: 0;
+            transform: translateY(1rem);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 }
 
 @layer base {
     body {
-        @apply bg-paper text-ink antialiased;
+        font-family: var(--font-serif);
+        @apply bg-paper text-ink antialiased relative;
     }
 
-    .prose-content p {
-        @apply mb-8 leading-relaxed text-lg;
+    #reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 2px;
+        @apply bg-ink z-[10000] transition-all duration-150 ease-out;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.08;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* THE DROP CAP */
+    .prose-content>p:first-of-type::first-letter {
+        font-family: var(--font-serif);
+        @apply italic text-ink border-l-2 border-t-2 border-ink/20;
+        float: left;
+        font-size: 5rem;
+        line-height: 0.85;
+        margin-top: 0.25rem;
+        margin-right: 0.85rem;
+        padding: 0.5rem 0.75rem;
+        initial-letter: 3;
     }
 
     .prose-content a {
         @apply text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink transition-all font-medium;
     }
 
-    .prose-content h2 {
-        @apply font-serif italic text-3xl mt-16 mb-6 leading-tight;
+    .editorial-quote {
+        @apply my-10 py-10 px-8 border-y border-ink/10 bg-ink/[0.02] flex flex-col items-center text-center relative opacity-0 animate-reveal;
+    }
+
+    .editorial-quote::before {
+        content: "“";
+        font-family: var(--font-serif);
+        @apply absolute -top-4 left-1/2 -translate-x-1/2 text-5xl text-ink/10 italic;
+    }
+
+    .quote-text {
+        @apply text-xl md:text-2xl italic text-ink leading-relaxed !mb-0 max-w-[90%];
+        display: block;
+        font-family: var(--font-serif);
+        text-wrap: balance;
+    }
+
+    .quote-author {
+        @apply text-[10px] uppercase tracking-[0.4em] font-bold text-muted not-italic mt-4 block;
+    }
+
+    .prose-content p {
+        @apply mb-10 leading-relaxed text-lg opacity-0 animate-reveal;
+        text-wrap: pretty;
+        @apply text-justify hyphens-auto;
+    }
+
+    .editorial-figure {
+        @apply my-16 flex flex-col items-center opacity-0 animate-reveal;
+        animation-delay: 0.4s;
+    }
+
+    .editorial-figure img {
+        @apply rounded-sm shadow-2xl transition-transform duration-500 hover:scale-[1.02];
+        max-width: 100%;
+        max-height: 75vh;
+        object-fit: contain;
+    }
+
+    .img-caption {
+        @apply mt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted font-bold;
+        font-family: var(--font-serif);
+        max-width: 80%;
     }
 
     .reading-container {
+        width: 100%;
         max-width: var(--spacing-grid);
         @apply mx-auto px-8 transition-all duration-700;
     }
 
+    /* Restrict width only on single post pages */
     body:not(.home) .reading-container {
         max-width: var(--spacing-reading);
-    }
-
-    main:has(.grid) .reading-container {
-        max-width: var(--spacing-grid);
     }
 }
 
 @layer utilities {
-    .rounded-xs {
-        border-radius: 2px;
+    .prose-content p:nth-child(1) {
+        animation-delay: 0.1s;
     }
 
-    .hover\:-translate-y-1:hover {
-        transform: translateY(-4px);
+    .prose-content p:nth-child(2) {
+        animation-delay: 0.2s;
     }
 
-    .prose-content iframe {
-        @apply w-full rounded-sm shadow-2xl my-10 block mx-auto;
-        aspect-ratio: 16 / 9;
-        height: auto;
-        border: none;
+    .prose-content p:nth-child(3) {
+        animation-delay: 0.3s;
     }
 
     .prose-content img {
-        @apply mx-auto my-12 rounded-sm shadow-xl max-h-[70vh] object-contain;
+        @apply opacity-0 animate-reveal;
+        animation-delay: 0.4s;
     }
-
-    .aspect-video {
-        aspect-ratio: 16 / 9;
-    }
-
-    .line-clamp-3 {
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .grid article {
-        min-height: 420px;
-    }
-}
-
-.reading-container {
-    max-width: var(--spacing-reading);
-    @apply mx-auto px-6;
 }

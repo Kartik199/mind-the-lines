@@ -1,5 +1,14 @@
 {{ define "main" }}
 <article class="reading-container pt-8 pb-24">
+    <div id="reading-progress"></div>
+    <script>
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("reading-progress").style.width = scrolled + "%";
+        });
+    </script>
     <header class="mb-12">
         <div class="flex items-center gap-4 mb-4 text-[10px] uppercase tracking-[0.5em] text-muted font-bold">
             <time>{{ .Date.Format "January 02, 2006" }}</time>
