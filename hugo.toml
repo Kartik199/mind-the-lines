@@ -1,14 +1,15 @@
 baseURL = '/'  # Changed from Netlify URL to relative for local dev stability
 languageCode = 'en-us'
 title = 'Mind the Lines'
+pagerSize = 6
 
 [taxonomies]
   category = "categories"
   tag = "tags"
 
 [permalinks]
-  # This ensures your category URLs are predictable and clean
   categories = "/categories/:slug/"
+  posts = "/:slug/"
 
 [params]
   description = "A journal of cinema, society, and the lines that stay."
@@ -16,7 +17,7 @@ title = 'Mind the Lines'
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
-      unsafe = true # Required for Sanity HTML/Portable Text rendering
+      unsafe = true 
 
 [frontmatter]
   # Helps Hugo handle special characters in titles more gracefully

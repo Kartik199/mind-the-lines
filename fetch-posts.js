@@ -2,6 +2,7 @@ const { createClient } = require('@sanity/client');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
+const imageUrlBuilder = require('@sanity/image-url');
 require('dotenv').config();
 
 const client = createClient({
@@ -12,56 +13,72 @@ const client = createClient({
     token: process.env.SANITY_API_TOKEN,
 });
 
+const builder = imageUrlBuilder.default ? imageUrlBuilder.default(client) : imageUrlBuilder(client);
+function urlFor(source) { return builder.image(source); }
+
+function processChildren(block) {
+    if (!block.children) return '';
+    return block.children.map(child => {
+        let text = child.text;
+        if (child.marks && child.marks.length > 0) {
+            const linkMark = block.markDefs.find(def => def._key === child.marks[0] && def._type === 'link');
+            if (linkMark) return `[${text}](${linkMark.href})`;
+        }
+        return text;
+    }).join('');
+}
+
+function blocksToMarkdown(blocks) {
+    if (!blocks) return '';
+    return blocks.map(block => {
+        if (block._type === 'block') {
+            const text = processChildren(block);
+            if (text.includes('{{< youtube')) return `\n\n${text}\n\n`;
+            if (block.style === 'h1') return `\n# ${text}\n`;
+            if (block.style === 'h2') return `\n## ${text}\n`;
+            if (block.style === 'blockquote') return `\n> ${text}\n`;
+            return text;
+        }
+        if (block._type === 'image') {
+            const imageUrl = urlFor(block.asset).width(1200).fit('max').auto('format').url();
+            return `\n\n![Blog Image](${imageUrl})\n\n`;
+        }
+        return '';
+    }).join('\n\n');
+}
+
 async function fetchPosts() {
     const query = `*[_type == "post"] {
-    title,
-    "slug": slug.current,
-    publishedAt,
-    "categories": categories[]->{
-      "title": title,
-      "slug": slug.current
-    },
-    "tags": tags[]->title,
-    body,
-    heroImageUrl,
-    oneLineTake
-  }`;
+        title,
+        "slug": slug.current,
+        publishedAt,
+        "heroImage": heroImage.asset->url,
+        summary,
+        "categories": categories[]->{ "title": title },
+        body
+    }`;
 
     try {
         const posts = await client.fetch(query);
-        console.log(`📦 Found ${posts.length} posts in Sanity.`);
-
-        // 1. Save rich data for the templates
-        const dataDir = path.join(__dirname, 'data');
-        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
-        fs.writeFileSync(path.join(dataDir, 'posts.json'), JSON.stringify(posts, null, 2));
-
-        // 2. Generate Markdown for Hugo's routing engine
         const postsDir = path.join(__dirname, 'content', 'posts');
         if (!fs.existsSync(postsDir)) fs.mkdirSync(postsDir, { recursive: true });
 
         posts.forEach(post => {
-            const fileName = `${post.slug}.md`;
-            const filePath = path.join(postsDir, fileName);
-
-            const frontmatterObj = {
+            const filePath = path.join(postsDir, `${post.slug}.md`);
+            const frontmatter = `---\n${yaml.dump({
                 title: post.title,
                 date: post.publishedAt || new Date().toISOString(),
-                // CRITICAL: Hugo needs a flat list of strings to generate category pages
+                heroImage: post.heroImage || '',
+                summary: post.summary || '',
                 categories: post.categories ? post.categories.map(c => c.title) : [],
-                tags: post.tags || [],
                 slug: post.slug
-            };
+            })}---\n`;
 
-            const frontmatter = `---\n${yaml.dump(frontmatterObj)}---\n`;
-            fs.writeFileSync(filePath, frontmatter);
+            fs.writeFileSync(filePath, frontmatter + '\n' + blocksToMarkdown(post.body));
         });
-
-        console.log('✅ Data synced. Category pages should now generate.');
+        console.log('✅ Success: Data mapped from Sanity schema.');
     } catch (error) {
         console.error('❌ Error:', error);
-        process.exit(1);
     }
 }
-
 fetchPosts();

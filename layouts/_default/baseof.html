@@ -3,56 +3,24 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} | {{ .Site.Title }}{{ end }}</title>
-
-    {{ $styles := resources.Get "css/main.css" | postCSS }}
-    <link rel="stylesheet" href="{{ $styles.RelPermalink }}">
-
-    <link
-        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Inter:wght@400;600&display=swap"
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="{{ " css/main.css" | absURL }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} — {{ .Site.Title }}{{ end }}</title>
+
+    {{ $css := resources.Get "css/main.css" | postCSS | minify | fingerprint }}
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}">
 </head>
 
-<body class="bg-paper text-ink antialiased flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen">
     {{ partial "header.html" . }}
-
-    <main class="flex-grow">
+    <main class="flex-grow pt-20">
         {{ block "main" . }}{{ end }}
     </main>
-
     {{ partial "footer.html" . }}
-
-    <script>
-        const trigger = document.getElementById('drawer-trigger');
-        const close = document.getElementById('drawer-close');
-        const drawer = document.getElementById('mind-drawer');
-        const content = document.getElementById('drawer-content');
-        const overlay = document.getElementById('drawer-overlay');
-
-        function toggleDrawer() {
-            const isHidden = drawer.classList.contains('invisible');
-            if (isHidden) {
-                // Open
-                drawer.classList.remove('invisible', 'pointer-events-none');
-                setTimeout(() => {
-                    content.classList.remove('translate-x-full');
-                    overlay.classList.add('opacity-100');
-                }, 10);
-            } else {
-                // Close
-                content.classList.add('translate-x-full');
-                overlay.classList.remove('opacity-100');
-                setTimeout(() => {
-                    drawer.classList.add('invisible', 'pointer-events-none');
-                }, 500);
-            }
-        }
-
-        trigger.addEventListener('click', toggleDrawer);
-        close.addEventListener('click', toggleDrawer);
-        overlay.addEventListener('click', toggleDrawer);
-    </script>
 </body>
 
 </html>

@@ -1,62 +1,83 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
 
 @theme {
-  /* Editorial Fonts */
-  --font-serif: "Merriweather", serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-  
-  /* Brand Colors */
-  --color-ink: #121212;
-  --color-paper: #ffffff;
-  --color-muted: #575757;
-  --color-accent: #2d3748;
+    --color-paper: #FBFAF5;
+    --color-ink: #1A1A1A;
+    --color-muted: #717171;
+    --font-serif: "Lora", "Times New Roman", serif;
+    --spacing-reading: 68ch;
+    --spacing-grid: 1200px;
 }
 
 @layer base {
-  .prose a {
-    @apply text-ink underline decoration-gray-300 underline-offset-4 transition-all hover:decoration-ink;
-  }
-  figure img {
-    @apply max-w-full h-auto block;
-  }
-  iframe {
-    @apply hover:shadow-2xl transition-shadow duration-500;
-  }
-  .group img {
-    filter: grayscale(100%);
-    transition: filter 0.7s ease-in-out, transform 0.7s ease-in-out;
-  }
+    body {
+        @apply bg-paper text-ink antialiased;
+    }
 
-  .group:hover img {
-    filter: grayscale(0%);
-    transform: scale(1.05);
-  }
-  body {
-    @apply font-sans text-ink bg-paper antialiased;
-  }
+    .prose-content p {
+        @apply mb-8 leading-relaxed text-lg;
+    }
 
-  /* The "Reading Zone" Container */
-  .reading-container {
-    @apply mx-auto w-full max-w-[720px] px-6 md:px-0;
-  }
+    .prose-content a {
+        @apply text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink transition-all font-medium;
+    }
 
-  /* Immersive Typography Logic */
-  .prose {
-    @apply font-serif text-[18px] md:text-[20px] leading-[1.85] text-ink;
-  }
+    .prose-content h2 {
+        @apply font-serif italic text-3xl mt-16 mb-6 leading-tight;
+    }
 
-  /* Distinctive Headers */
-  h1 { @apply font-serif text-4xl md:text-5xl font-bold tracking-tight leading-tight mb-4; }
-  h2 { @apply font-serif text-2xl md:text-3xl font-bold mt-12 mb-6; }
-  
-  /* Blockquote styling for "Lines that Stayed" */
-  blockquote {
-    @apply border-l-4 border-ink pl-6 italic my-10 text-muted;
-  }
-.tamil-text {
-  font-family: 'Hind Madurai', sans-serif; /* A beautiful, readable Tamil font */
-  line-height: 1.6;
+    .reading-container {
+        max-width: var(--spacing-grid);
+        @apply mx-auto px-8 transition-all duration-700;
+    }
+
+    body:not(.home) .reading-container {
+        max-width: var(--spacing-reading);
+    }
+
+    main:has(.grid) .reading-container {
+        max-width: var(--spacing-grid);
+    }
 }
-  /* Optimized paragraph spacing */
-  p { @apply mb-8; }
+
+@layer utilities {
+    .rounded-xs {
+        border-radius: 2px;
+    }
+
+    .hover\:-translate-y-1:hover {
+        transform: translateY(-4px);
+    }
+
+    .prose-content iframe {
+        @apply w-full rounded-sm shadow-2xl my-10 block mx-auto;
+        aspect-ratio: 16 / 9;
+        height: auto;
+        border: none;
+    }
+
+    .prose-content img {
+        @apply mx-auto my-12 rounded-sm shadow-xl max-h-[70vh] object-contain;
+    }
+
+    .aspect-video {
+        aspect-ratio: 16 / 9;
+    }
+
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .grid article {
+        min-height: 420px;
+    }
+}
+
+.reading-container {
+    max-width: var(--spacing-reading);
+    @apply mx-auto px-6;
 }

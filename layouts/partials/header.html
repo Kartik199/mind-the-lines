@@ -1,21 +1,39 @@
-<header class="w-full py-8 border-b border-ink/5">
-    <div class="reading-container flex justify-between items-center mx-auto max-w-2xl px-6">
-        <a href="/" class="text-2xl font-serif italic tracking-tight text-ink">Mind the Lines</a>
+<header class="fixed top-0 left-0 w-full z-50 bg-paper/80 backdrop-blur-md border-b border-ink/5">
+    <div class="max-w-[1400px] mx-auto px-8 h-24 flex items-center justify-between">
+        <a href="/" class="group">
+            <h1 class="text-3xl font-serif italic text-ink tracking-tight group-hover:text-muted transition-colors">
+                Mind the Lines
+            </h1>
+        </a>
 
-        <nav class="flex flex-col items-end">
-            <h3 class="text-[10px] uppercase tracking-[0.3em] text-muted mb-4">The Mind Drawer</h3>
-            <ul class="flex gap-6">
-                {{/* Use Hugo's internal Taxonomy list which is guaranteed to exist if the .md files have categories
-                */}}
-                {{ range $name, $taxonomy := .Site.Taxonomies.categories }}
-                <li>
-                    <a href="/categories/{{ $name | urlize }}/"
-                        class="text-[11px] uppercase tracking-[0.2em] font-bold text-ink hover:text-muted transition-colors">
-                        {{ $name | humanize }}
-                    </a>
-                </li>
-                {{ end }}
-            </ul>
+        <nav class="flex items-center gap-12">
+            <div class="relative group cursor-pointer py-4">
+                <span
+                    class="text-[10px] uppercase tracking-[0.3em] font-bold text-muted group-hover:text-ink transition-colors flex items-center gap-2">
+                    Categories <span
+                        class="text-[8px] opacity-40 group-hover:rotate-180 transition-transform duration-300">▼</span>
+                </span>
+
+                <div class="absolute right-0 top-full pt-2 
+                    opacity-0 invisible pointer-events-none 
+                    group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto 
+                    transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                    <div
+                        class="bg-paper border border-ink/10 shadow-2xl py-6 min-w-[220px] rounded-sm backdrop-blur-md">
+                        {{ range .Site.Taxonomies.categories }}
+                        <a href="{{ .Page.Permalink }}"
+                            class="block px-8 py-3 text-[10px] uppercase tracking-[0.2em] text-muted hover:text-ink hover:bg-ink/[0.03] transition-colors">
+                            {{ .Page.Title }}
+                        </a>
+                        {{ end }}
+                    </div>
+                </div>
+            </div>
+
+            <a href="/about"
+                class="text-[10px] uppercase tracking-[0.3em] font-bold text-muted hover:text-ink transition-colors">
+                About
+            </a>
         </nav>
     </div>
 </header>

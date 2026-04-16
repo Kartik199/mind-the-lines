@@ -1,30 +1,31 @@
 {{ define "main" }}
-{{ $post := index (where $.Site.Data.posts "slug" .Slug) 0 }}
-
-<article class="pb-24">
-    {{ if $post.heroImageUrl }}
-    <div class="w-full h-[60vh] relative overflow-hidden bg-ink mb-16">
-        <img src="{{ $post.heroImageUrl }}" class="w-full h-full object-cover" alt="{{ $post.title }}">
-    </div>
-    {{ end }}
-
-    <header class="reading-container mb-12 mx-auto max-w-2xl px-6">
-        {{ if $post.categories }}
-        <div class="flex flex-wrap gap-3 mb-6">
-            {{ range $post.categories }}
-            <a href="/categories/{{ .title | urlize }}/"
-                class="text-[10px] uppercase tracking-[0.3em] font-bold text-muted border border-ink/10 px-3 py-1 rounded-full hover:bg-ink hover:text-white transition-all">
-                {{ .title }}
-            </a>
+<article class="reading-container pt-8 pb-24">
+    <header class="mb-12">
+        <div class="flex items-center gap-4 mb-4 text-[10px] uppercase tracking-[0.5em] text-muted font-bold">
+            <time>{{ .Date.Format "January 02, 2006" }}</time>
+            {{ with .Params.categories }}
+            <span class="h-[1px] w-8 bg-ink/10"></span>
+            {{ range . }}<span>{{ . }}</span>{{ end }}
             {{ end }}
         </div>
-        {{ end }}
 
-        <h1 class="text-5xl font-serif italic leading-tight">{{ $post.title }}</h1>
+        <h1 class="text-5xl md:text-6xl font-serif italic text-ink leading-[1.1] tracking-tight">
+            {{ .Title }}
+        </h1>
     </header>
 
-    <div class="reading-container prose mx-auto max-w-2xl px-6">
-        {{ partial "portable-text.html" $post.body }}
+    <div class="prose-content">
+        {{ .Content }}
     </div>
+
+    {{ if .Params.tags }}
+    <footer class="mt-24 pt-10 border-t border-ink/5 flex gap-4">
+        {{ range .Params.tags }}
+        <span class="text-[10px] uppercase tracking-widest text-muted border border-ink/10 px-3 py-1 rounded-full">
+            #{{ . }}
+        </span>
+        {{ end }}
+    </footer>
+    {{ end }}
 </article>
 {{ end }}
