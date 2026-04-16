@@ -7,27 +7,27 @@
 
     <div class="space-y-16">
         {{ range .Paginator.Pages }}
-            {{ $postData := index (where $.Site.Data.posts "slug" .Slug) 0 }}
-            
-            <article class="group">
-                <a href="{{ .RelPermalink }}" class="block">
-                    <div class="flex flex-col">
-                        <time class="text-[10px] font-mono text-muted mb-2">
-                            {{ .Date.Format "Jan 02, 2006" }}
-                        </time>
-                        <h3 class="text-3xl font-serif italic leading-tight group-hover:text-muted transition-colors">
-                            {{ .Title }}
-                        </h3>
-                        <p class="text-muted text-base mt-3 line-clamp-2 leading-relaxed">
-                            {{ if $postData.oneLineTake }}
-                                {{ $postData.oneLineTake }}
-                            {{ else }}
-                                {{ .Summary | plainify }}
-                            {{ end }}
-                        </p>
-                    </div>
-                </a>
-            </article>
+        {{ $postData := index (where $.Site.Data.posts "slug" .Slug) 0 }}
+
+        <article class="group">
+            <a href="{{ .RelPermalink }}" class="block">
+                <div class="flex flex-col">
+                    <time class="text-[10px] font-mono text-muted mb-2">
+                        {{ .Date.Format "Jan 02, 2006" }}
+                    </time>
+                    <h3 class="text-3xl font-serif italic leading-tight group-hover:text-muted transition-colors">
+                        {{ .Title }}
+                    </h3>
+                    <p class="text-muted text-base mt-3 line-clamp-2 leading-relaxed">
+                        {{ if $postData.oneLineTake }}
+                        {{ $postData.oneLineTake }}
+                        {{ else }}
+                        {{ .Summary | plainify }}
+                        {{ end }}
+                    </p>
+                </div>
+            </a>
+        </article>
         {{ end }}
     </div>
 </section>

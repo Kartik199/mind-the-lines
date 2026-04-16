@@ -12,8 +12,8 @@
         {{ if $post.categories }}
         <div class="flex flex-wrap gap-3 mb-6">
             {{ range $post.categories }}
-            <a href="/categories/{{ .title | urlize }}/" 
-               class="text-[10px] uppercase tracking-[0.3em] font-bold text-muted border border-ink/10 px-3 py-1 rounded-full hover:bg-ink hover:text-white transition-all">
+            <a href="/categories/{{ .title | urlize }}/"
+                class="text-[10px] uppercase tracking-[0.3em] font-bold text-muted border border-ink/10 px-3 py-1 rounded-full hover:bg-ink hover:text-white transition-all">
                 {{ .title }}
             </a>
             {{ end }}
