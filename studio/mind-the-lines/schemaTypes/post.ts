@@ -90,12 +90,16 @@ export default defineType({
                     ],
                 },
                 {
-                    type: 'object',
                     name: 'inlineQuote',
-                    title: 'Inline Quote',
+                    type: 'object',
                     fields: [
-                        { name: 'text', type: 'text', title: 'The Quote' },
-                        { name: 'author', type: 'string', title: 'Source (e.g. Baashha)' }
+                        { name: 'text', type: 'text' },
+                        { name: 'author', type: 'string' },
+                        {
+                            name: 'style',
+                            type: 'string',
+                            options: { list: ['editorial', 'pull-left', 'pull-right'] }
+                        }
                     ]
                 }
             ],

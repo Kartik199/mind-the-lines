@@ -14,8 +14,8 @@ const client = createClient({
 });
 
 const builder = imageUrlBuilder.default ? imageUrlBuilder.default(client) : imageUrlBuilder(client);
-function urlFor(source) { 
-    return builder.image(source).auto('format'); 
+function urlFor(source) {
+    return builder.image(source).auto('format');
 }
 
 function processChildren(block) {
@@ -38,28 +38,29 @@ function blocksToMarkdown(blocks) {
             if (text.includes('{{< youtube')) return `\n\n${text}\n\n`;
             if (block.style === 'h1') return `\n# ${text}\n`;
             if (block.style === 'h2') return `\n## ${text}\n`;
-            if (block.style === 'blockquote') return `\n> ${text}\n`;
             return text;
         }
-        
+
+        // QUOTE LOGIC: Editorial vs Pull Quotes
         if (block._type === 'inlineQuote') {
+            const style = block.style || 'editorial';
             const authorMarkup = block.author ? `<cite class="quote-author">— ${block.author}</cite>` : '';
-            return `\n<blockquote class="editorial-quote"><p class="quote-text">"${block.text}"</p>${authorMarkup}</blockquote>\n`;
+
+            if (style.startsWith('pull-')) {
+                const side = style.split('-')[1]; // 'left' or 'right'
+                return `<aside class="pull-quote ${side} reveal-on-scroll">"${block.text}"${authorMarkup}</aside>`;
+            }
+            return `\n<blockquote class="editorial-quote reveal-on-scroll"><p class="quote-text">"${block.text}"</p>${authorMarkup}</blockquote>\n`;
         }
 
+        // IMAGE LOGIC: Lightbox and Alt-Text
         if (block._type === 'image') {
-            // CONTROL: Resize to 800px wide, maintain aspect ratio, no cropping
-            const imageUrl = urlFor(block.asset)
-                .width(800) 
-                .fit('max')
-                .url();
-
+            const imageUrl = urlFor(block.asset).width(1200).fit('max').auto('format').url();
+            const altText = block.alt || "Photography by Kartikeyan Sundaresan";
             const captionMarkup = block.caption ? `<figcaption class="img-caption">${block.caption}</figcaption>` : '';
-            return `
-<figure class="editorial-figure">
-    <img src="${imageUrl}" alt="${block.alt || 'Blog Image'}" loading="lazy" />
-    ${captionMarkup}
-</figure>`;
+
+            // Adding extra newlines (\n\n) helps the Markdown parser recognize this as a separate block
+            return `\n\n<figure class="editorial-figure reveal-on-scroll">\n    <img src="${imageUrl}" alt="${altText}" class="lightbox-trigger cursor-zoom-in" loading="lazy" />\n    ${captionMarkup}\n</figure>\n\n`;
         }
         return '';
     }).join('\n\n');
@@ -98,5 +99,5 @@ async function fetchPosts() {
     } catch (error) {
         console.error('❌ Error:', error);
     }
-} 
+}
 fetchPosts();

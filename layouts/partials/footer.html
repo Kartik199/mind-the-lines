@@ -4,9 +4,41 @@
             &copy; {{ now.Format "2006" }} Mind the Lines
         </p>
         <div class="mt-4 flex justify-center gap-6">
-            <a href="/" class="text-[9px] uppercase tracking-widest text-muted hover:text-ink transition-colors">Home</a>
+            <a href="/"
+                class="text-[9px] uppercase tracking-widest text-muted hover:text-ink transition-colors">Home</a>
             <span class="text-ink/10">•</span>
-            <a href="/categories/" class="text-[9px] uppercase tracking-widest text-muted hover:text-ink transition-colors">Archives</a>
+            <a href="/categories/"
+                class="text-[9px] uppercase tracking-widest text-muted hover:text-ink transition-colors">Archives</a>
         </div>
     </div>
+    <div id="reading-progress"></div>
+
+    <script>
+        // 1. Reading Progress Line
+        window.onscroll = () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            document.getElementById("reading-progress").style.width = ((winScroll / height) * 100) + "%";
+        };
+
+        // 2. Scroll Reveal Observer
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('is-visible');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal-on-scroll, .prose-content p').forEach(el => revealObserver.observe(el));
+
+        // 3. Image Lightbox
+        document.querySelectorAll('.lightbox-trigger').forEach(img => {
+            img.onclick = () => {
+                const modal = document.createElement('div');
+                modal.className = "fixed inset-0 bg-ink/98 z-[10001] flex items-center justify-center p-4 cursor-zoom-out animate-reveal";
+                modal.innerHTML = `<img src="${img.src}" class="max-h-full max-w-full shadow-2xl rounded-sm">`;
+                modal.onclick = () => modal.remove();
+                document.body.appendChild(modal);
+            };
+        });
+    </script>
 </footer>
