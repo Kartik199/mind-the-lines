@@ -17,6 +17,7 @@
             opacity: 0;
             transform: translateY(1rem);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -44,7 +45,6 @@
         @apply opacity-100 translate-y-0;
     }
 
-    /* FILM GRAIN OVERLAY */
     body::before {
         content: "";
         position: fixed;
@@ -58,7 +58,6 @@
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
-    /* DROP CAP */
     .prose-content>p:first-of-type::first-letter {
         font-family: var(--font-serif);
         @apply italic text-ink border-l-2 border-t-2 border-ink/20;
@@ -69,6 +68,24 @@
         margin-right: 0.85rem;
         padding: 0.5rem 0.75rem;
         initial-letter: 3;
+    }
+
+    .about-page .prose-content>p:first-of-type::first-letter {
+        all: unset !important;
+        initial-letter: normal !important;
+        /* This removes the reserved vertical 3-line gap */
+        -webkit-initial-letter: normal !important;
+        float: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: inline !important;
+        font-size: inherit !important;
+        line-height: inherit !important;
+    }
+
+    /* Ensure the paragraph itself doesn't have unintended padding */
+    .about-page .prose-content>p:first-of-type {
+        @apply mt-0 pt-0;
     }
 
     .prose-content a {
@@ -97,13 +114,11 @@
         @apply text-[10px] uppercase tracking-[0.4em] font-bold text-muted not-italic mt-4 block;
     }
 
-    /* TYPOGRAPHY */
     .prose-content p {
         @apply mb-10 leading-relaxed text-lg opacity-0 text-justify hyphens-auto animate-reveal;
         text-wrap: pretty;
     }
 
-    /* FIGURES & IMAGES */
     .editorial-figure {
         @apply my-16 flex flex-col items-center opacity-0 animate-reveal;
         animation-delay: 0.4s;
@@ -136,13 +151,44 @@
         @apply md:w-1/2 my-8 p-6 border-l-4 border-ink/20 italic text-xl opacity-0 animate-reveal;
     }
 
-    .pull-quote.left { @apply md:float-left md:-ml-24 md:mr-10; }
-    .pull-quote.right { @apply md:float-right md:-mr-24 md:ml-10; }
+    .pull-quote.left {
+        @apply md:float-left md:-ml-24 md:mr-10;
+    }
+
+    .pull-quote.right {
+        @apply md:float-right md:-mr-24 md:ml-10;
+    }
+
+    /* CATEGORY ARCHIVE STYLES */
+    .category-toggle h2 {
+        text-transform: capitalize;
+    }
+
+    .category-content ul li {
+        @apply transition-all duration-300;
+    }
+
+    /* Make sure the reveal-on-scroll works on the new elements */
+    .category-content:not(.hidden) {
+        animation: reveal 0.5s ease-out forwards;
+    }
 }
 
 @layer utilities {
-    .prose-content p:nth-child(1) { animation-delay: 0.1s; }
-    .prose-content p:nth-child(2) { animation-delay: 0.2s; }
-    .prose-content p:nth-child(3) { animation-delay: 0.3s; }
-    .prose-content img { @apply opacity-0 animate-reveal; animation-delay: 0.4s; }
+    .prose-content p:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .prose-content p:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .prose-content p:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .prose-content img {
+        @apply opacity-0 animate-reveal;
+        animation-delay: 0.4s;
+    }
 }

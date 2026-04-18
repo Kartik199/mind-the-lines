@@ -9,7 +9,7 @@ const client = createClient({
     projectId: process.env.SANITY_PROJECT_ID,
     dataset: process.env.SANITY_DATASET || 'production',
     useCdn: false,
-    apiVersion: '2024-03-01',
+    apiVersion: '2026-04-04',
     token: process.env.SANITY_API_TOKEN,
 });
 
@@ -41,25 +41,22 @@ function blocksToMarkdown(blocks) {
             return text;
         }
 
-        // QUOTE LOGIC: Editorial vs Pull Quotes
         if (block._type === 'inlineQuote') {
             const style = block.style || 'editorial';
             const authorMarkup = block.author ? `<cite class="quote-author">— ${block.author}</cite>` : '';
 
             if (style.startsWith('pull-')) {
-                const side = style.split('-')[1]; // 'left' or 'right'
+                const side = style.split('-')[1];
                 return `<aside class="pull-quote ${side} reveal-on-scroll">"${block.text}"${authorMarkup}</aside>`;
             }
             return `\n<blockquote class="editorial-quote reveal-on-scroll"><p class="quote-text">"${block.text}"</p>${authorMarkup}</blockquote>\n`;
         }
 
-        // IMAGE LOGIC: Lightbox and Alt-Text
         if (block._type === 'image') {
             const imageUrl = urlFor(block.asset).width(1200).fit('max').auto('format').url();
             const altText = block.alt || "Photography by Kartikeyan Sundaresan";
             const captionMarkup = block.caption ? `<figcaption class="img-caption">${block.caption}</figcaption>` : '';
 
-            // Adding extra newlines (\n\n) helps the Markdown parser recognize this as a separate block
             return `\n\n<figure class="editorial-figure reveal-on-scroll">\n    <img src="${imageUrl}" alt="${altText}" class="lightbox-trigger cursor-zoom-in" loading="lazy" />\n    ${captionMarkup}\n</figure>\n\n`;
         }
         return '';
@@ -67,10 +64,11 @@ function blocksToMarkdown(blocks) {
 }
 
 async function fetchPosts() {
-    const query = `*[_type == "post"] {
+    // Optimized Query: Prioritizes manual dates over automatic timestamps
+    const query = `*[_type == "post"] | order(publishedAt desc) {
         title,
         "slug": slug.current,
-        publishedAt,
+        "publishedAt": coalesce(publishedAt, _createdAt),
         "heroImage": heroImage.asset->url,
         summary,
         "categories": categories[]->{ "title": title },
@@ -79,14 +77,17 @@ async function fetchPosts() {
 
     try {
         const posts = await client.fetch(query);
-        const postsDir = path.join(__dirname, 'content', 'posts');
-        if (!fs.existsSync(postsDir)) fs.mkdirSync(postsDir, { recursive: true });
+        const postsDir = path.resolve(__dirname, 'content', 'posts');
+        
+        if (!fs.existsSync(postsDir)) {
+            fs.mkdirSync(postsDir, { recursive: true });
+        }
 
         posts.forEach(post => {
             const filePath = path.join(postsDir, `${post.slug}.md`);
             const frontmatter = `---\n${yaml.dump({
                 title: post.title,
-                date: post.publishedAt || new Date().toISOString(),
+                date: post.publishedAt,
                 heroImage: post.heroImage || '',
                 summary: post.summary || '',
                 categories: post.categories ? post.categories.map(c => c.title) : [],
@@ -95,9 +96,9 @@ async function fetchPosts() {
 
             fs.writeFileSync(filePath, frontmatter + '\n' + blocksToMarkdown(post.body));
         });
-        console.log('✅ Success: Images resized with aspect-ratio preservation.');
+        console.log(`Success: Synced ${posts.length} posts with precise timestamps.`);
     } catch (error) {
-        console.error('❌ Error:', error);
+        console.error('Fetch Error:', error);
     }
 }
 fetchPosts();

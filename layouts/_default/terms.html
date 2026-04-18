@@ -1,0 +1,73 @@
+{{ define "main" }}
+<section class="reading-container py-32">
+    <header class="mb-20 border-b border-ink/10 pb-8 reveal-on-scroll">
+        <h1 class="text-5xl md:text-5xl font-serif italic text-ink tracking-tight">Categories</h1>
+    </header>
+
+    <div class="space-y-4">
+        {{ range .Data.Terms.Alphabetical }}
+        <div class="border-b border-ink/5 reveal-on-scroll">
+            <button
+                class="category-toggle w-full flex items-center justify-between py-10 group cursor-pointer outline-none">
+                <div class="text-left">
+                    <h2 class="text-2xl md:text-2xl font-serif text-ink group-hover:italic transition-all capitalize">
+                        {{ .Page.Title }}
+                    </h2>
+                    <p class="category-description hidden mt-4 text-muted text-sm italic font-serif max-w-md">
+                        {{ .Page.Params.description }}
+                    </p>
+                </div>
+                <div class="flex items-center gap-8">
+                    <span class="text-[10px] font-serif italic text-muted">0{{ .Count }} Stories</span>
+                    <span class="toggle-icon text-2xl transition-transform duration-300">+</span>
+                </div>
+            </button>
+
+            <div class="category-content hidden pb-12 pl-4">
+                <ul class="space-y-6 border-l border-ink/10 pl-8">
+                    {{ range .Pages }}
+                    <li>
+                        <a href="{{ .RelPermalink }}"
+                            class="group flex flex-col md:flex-row md:items-baseline justify-between gap-2">
+                            <h3 class="text-1xl font-serif text-ink group-hover:text-muted transition-colors">
+                                {{ .Title }}
+                            </h3>
+                            <time class="text-[2px] uppercase tracking-widest text-muted whitespace-nowrap">
+                                {{ .Date.Format "Jan 2006" }}
+                            </time>
+                        </a>
+                    </li>
+                    {{ end }}
+                    <li class="pt-4">
+                        <a href="{{ .Page.Permalink }}"
+                            class="text-[2px] uppercase tracking-[0.3em] font-bold text-ink hover:opacity-60 transition-opacity">
+                            View Full Section →
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {{ end }}
+    </div>
+</section>
+
+<script>
+    document.querySelectorAll('.category-toggle').forEach(button => {
+        button.onclick = () => {
+            const content = button.nextElementSibling;
+            const description = button.querySelector('.category-description');
+            const icon = button.querySelector('.toggle-icon');
+            const isHidden = content.classList.contains('hidden');
+
+            document.querySelectorAll('.category-content, .category-description').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.toggle-icon').forEach(i => i.innerHTML = "+");
+
+            if (isHidden) {
+                content.classList.remove('hidden');
+                description.classList.remove('hidden');
+                icon.innerHTML = "−";
+            }
+        };
+    });
+</script>
+{{ end }}

@@ -5,7 +5,6 @@ export default defineType({
     title: 'Editorial Post',
     type: 'document',
     fields: [
-        /* 1. Meta & Discovery */
         defineField({
             name: 'title',
             title: 'Title',
@@ -20,9 +19,19 @@ export default defineType({
             validation: (Rule) => Rule.required(),
         }),
         defineField({
+            name: 'publishedAt',
+            title: 'Original Published Date',
+            type: 'datetime',
+            description: 'Set this to control the date shown in the grid. If empty, creation date is used.',
+            options: {
+                dateFormat: 'YYYY-MM-DD',
+                timeFormat: 'HH:mm',
+            }
+        }),
+        defineField({
             name: 'summary',
             title: 'Home Page Summary',
-            description: 'The short hook that appears on the homepage cards. Keep it under 160 characters.',
+            description: 'The short hook that appears on the homepage cards.',
             type: 'text',
             rows: 3,
             validation: (Rule) => Rule.required().max(200),
@@ -33,12 +42,9 @@ export default defineType({
             type: 'array',
             of: [{ type: 'reference', to: [{ type: 'category' }] }],
         }),
-
-        /* 2. Visuals */
         defineField({
             name: 'heroImage',
             title: 'Hero Image',
-            description: 'The full-bleed image at the top of the article.',
             type: 'image',
             options: { hotspot: true },
             fields: [
@@ -46,48 +52,28 @@ export default defineType({
                     name: 'alt',
                     type: 'string',
                     title: 'Alt Text',
-                    description: 'Important for SEO and accessibility.',
                 },
             ],
         }),
-
-        /* 3. The Rich Text Body (WordPress Migration Ready) */
         defineField({
             name: 'body',
             title: 'Content Body',
-            description: 'The main prose. Use blocks for inline images and YouTube embeds.',
             type: 'array',
             of: [
-                { type: 'block' }, // Standard text
+                { type: 'block' },
                 {
                     type: 'image',
-                    title: 'Inline Photo',
                     options: { hotspot: true },
                     fields: [
-                        {
-                            name: 'caption',
-                            type: 'string',
-                            title: 'Caption',
-                            description: 'Appears below the image.',
-                        },
-                        {
-                            name: 'alt',
-                            type: 'string',
-                            title: 'Alt Text',
-                        },
+                        { name: 'caption', type: 'string', title: 'Caption' },
+                        { name: 'alt', type: 'string', title: 'Alt Text' },
                     ],
                 },
                 {
                     type: 'object',
                     name: 'youtube',
                     title: 'YouTube Video',
-                    fields: [
-                        {
-                            name: 'url',
-                            type: 'url',
-                            title: 'Video URL',
-                        },
-                    ],
+                    fields: [{ name: 'url', type: 'url', title: 'Video URL' }],
                 },
                 {
                     name: 'inlineQuote',
