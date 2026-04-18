@@ -115,7 +115,10 @@
     }
 
     .prose-content p {
-        @apply mb-10 leading-relaxed text-lg opacity-0 text-justify hyphens-auto animate-reveal;
+        /* Mobile first: left aligned to avoid awkward gaps */
+        @apply mb-10 leading-relaxed text-lg opacity-0 text-left animate-reveal;
+        /* Desktop: justified for the formal editorial look */
+        @apply md:text-justify md:hyphens-auto;
         text-wrap: pretty;
     }
 
