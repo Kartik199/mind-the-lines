@@ -6,6 +6,7 @@
   "scripts": {
     "fetch": "node fetch-posts.js",
     "build": "npm run fetch && hugo --gc --minify",
+    "postbuild": "npx pagefind --site public",
     "dev": "npm run fetch && hugo server -D"
   },
   "keywords": [],

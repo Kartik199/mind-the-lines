@@ -3,25 +3,90 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" as="style">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ " css/main.css" | absURL }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} — {{ .Site.Title }}{{ end }}</title>
-
     {{ $css := resources.Get "css/main.css" | postCSS | minify | fingerprint }}
     <link rel="stylesheet" href="{{ $css.RelPermalink }}">
 </head>
 
 <body class="flex flex-col min-h-screen">
     {{ partial "header.html" . }}
-    <main class="flex-grow pt-20">
+
+    <main class="flex-grow pt-32">
         {{ block "main" . }}{{ end }}
     </main>
+
     {{ partial "footer.html" . }}
+
+    <div id="search-modal"
+        class="fixed inset-0 z-[1000] hidden bg-paper flex items-start justify-center pt-24 md:pt-32 px-6 md:px-8"
+        data-pagefind-ignore>
+        <div class="w-full max-w-2xl h-full flex flex-col">
+            <div class="flex justify-between items-center mb-12 flex-shrink-0">
+                <span class="text-[10px] uppercase tracking-[0.5em] text-muted font-bold">Search</span>
+                <button id="search-close"
+                    class="text-muted hover:text-ink font-serif italic text-sm border-none bg-transparent">Close
+                    [Esc]</button>
+            </div>
+            <div id="search" class="flex-grow overflow-y-auto pb-20"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchModal = document.getElementById('search-modal');
+            const mobileNav = document.getElementById('mobile-nav');
+            let searchLoaded = false;
+
+            function toggleUI(element, activeClass, show) {
+                element.classList.toggle('hidden', !show);
+                document.body.classList.toggle(activeClass, show);
+                document.body.style.overflow = show ? 'hidden' : '';
+            }
+
+            const triggerSearch = async (show) => {
+                if (show && !searchLoaded) {
+                    const script = document.createElement('script');
+                    script.src = '/pagefind/pagefind-ui.js';
+                    script.onload = () => {
+                        new PagefindUI({
+                            element: "#search",
+                            showImages: false,
+                            translations: { placeholder: " " }
+                        });
+                        setTimeout(() => document.querySelector('.pagefind-ui__search-input')?.focus(), 150);
+                    };
+                    document.head.appendChild(script);
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet'; link.href = '/pagefind/pagefind-ui.css';
+                    document.head.appendChild(link);
+                    searchLoaded = true;
+                }
+                toggleUI(searchModal, 'search-active', show);
+            };
+
+            document.getElementById('search-trigger')?.addEventListener('click', () => triggerSearch(true));
+            document.getElementById('search-trigger-mobile')?.addEventListener('click', () => triggerSearch(true));
+            document.getElementById('search-close')?.addEventListener('click', () => triggerSearch(false));
+            document.getElementById('mobile-menu-open')?.addEventListener('click', () => toggleUI(mobileNav, 'mobile-menu-active', true));
+            document.getElementById('mobile-nav-close')?.addEventListener('click', () => toggleUI(mobileNav, 'mobile-menu-active', false));
+
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+                    e.preventDefault();
+                    triggerSearch(true);
+                }
+
+                if (e.key === 'Escape') {
+                    triggerSearch(false);
+                    if (typeof toggleUI === 'function') {
+                        toggleUI(document.getElementById('mobile-nav'), 'mobile-menu-active', false);
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
