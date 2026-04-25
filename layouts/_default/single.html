@@ -1,7 +1,8 @@
 {{ define "main" }}
 <article class="reading-container pt-8 pb-24">
     <header class="mb-12">
-        <div class="flex items-center gap-4 mb-4 text-[10px] uppercase tracking-[0.5em] text-muted font-bold">
+        <div class="flex items-center gap-4 mb-4 text-[10px] uppercase tracking-[0.5em] text-muted font-bold"
+            data-pagefind-ignore>
             <time>{{ .Date.Format "January 02, 2006" }}</time>
             {{ with .Params.categories }}
             <span class="h-[1px] w-8 bg-ink/10"></span>
@@ -9,17 +10,18 @@
             {{ end }}
         </div>
 
-        <h1 class="text-5xl md:text-6xl font-serif italic text-ink leading-[1.1] tracking-tight">
+        <h1 class="text-5xl md:text-6xl font-serif italic text-ink leading-[1.1] tracking-tight" data-pagefind-body
+            data-pagefind-weight="10" data-pagefind-meta="title">
             {{ .Title }}
         </h1>
     </header>
 
-    <div class="prose-content">
+    <div class="prose-content" data-pagefind-body>
         {{ .Content }}
     </div>
 
     {{ if .Params.tags }}
-    <footer class="mt-24 pt-10 border-t border-ink/5 flex gap-4">
+    <footer class="mt-24 pt-10 border-t border-ink/5 flex gap-4" data-pagefind-ignore>
         {{ range .Params.tags }}
         <span class="text-[10px] uppercase tracking-widest text-muted border border-ink/10 px-3 py-1 rounded-full">
             #{{ . }}
