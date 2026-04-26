@@ -19,6 +19,7 @@ The architecture follows a **Static-First, Minimal-JS** philosophy. The goal is 
 
 This platform utilizes a decoupled architecture to balance editorial flexibility with production performance.
 
+```mermaid
 graph LR
     subgraph CMS [Content Layer]
         A[Editor Inputs] --> B(Sanity.io CMS)
@@ -34,9 +35,10 @@ graph LR
         E --> F((End User))
     end
 
-    style B fill:#f96,stroke:#333,stroke-width:2px
-    style C fill:#69f,stroke:#333,stroke-width:2px
-    style E fill:#5f5,stroke:#333,stroke-width:2px
+    style B fill:#f96,stroke:#333,stroke-width:1px
+    style C fill:#69f,stroke:#333,stroke-width:1px
+    style E fill:#5f5,stroke:#333,stroke-width:1px
+```  
 
 ### 1. Headless Content Management (Sanity.io)
 - **Structured Content:** Utilizing Sanity's GROQ (Graph-Relational Object Queries) to fetch deeply nested editorial data.
