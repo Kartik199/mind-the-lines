@@ -2,7 +2,7 @@
 
 A high-performance, minimalist editorial platform designed for deep-dive investigations into distributed systems, Java architecture, and Tamil classical literature. Architected as a Jamstack solution prioritizing static delivery, semantic search, and editorial flexibility.
 
-[![v1.0.0](https://img.shields.io/badge/Release-v1.0.0-blue)](https://github.com/your-username/mind-the-lines/releases/tag/v1.0.0)
+[![v1.0.0](https://img.shields.io/badge/Release-v1.0.0-blue)](https://github.com/Kartik199/mind-the-lines/releases/tag/v1.0.0)
 
 ## 1. Technical Philosophy
 The architecture follows a **Static-First, Minimal-JS** philosophy. The goal is to provide a "paper-like" reading experience with sub-second latency and zero unnecessary client-side overhead. As an SDE-2/Architect, I designed this with performance-first principles: decoupling content from presentation, leveraging CDNs for global distribution, and minimizing runtime dependencies.
@@ -19,10 +19,24 @@ The architecture follows a **Static-First, Minimal-JS** philosophy. The goal is 
 
 This platform utilizes a decoupled architecture to balance editorial flexibility with production performance.
 
-[Sanity.io (CMS)] --(GROQ)--> [Hugo (Build)] --(Pagefind)--> [Netlify (CDN)]
-      ^                            |                              |
-      |                            |                              |
-[Editor Inputs]             [Static Assets]                [End User]
+graph LR
+    subgraph CMS [Content Layer]
+        A[Editor Inputs] --> B(Sanity.io CMS)
+    end
+
+    subgraph Build [Build Pipeline]
+        B -- "GROQ Queries" --> C{Hugo Build}
+        C --> D[Pagefind Indexing]
+    end
+
+    subgraph Distribution [Edge Network]
+        D -- "Static Assets" --> E[Netlify CDN]
+        E --> F((End User))
+    end
+
+    style B fill:#f96,stroke:#333,stroke-width:2px
+    style C fill:#69f,stroke:#333,stroke-width:2px
+    style E fill:#5f5,stroke:#333,stroke-width:2px
 
 ### 1. Headless Content Management (Sanity.io)
 - **Structured Content:** Utilizing Sanity's GROQ (Graph-Relational Object Queries) to fetch deeply nested editorial data.
@@ -40,20 +54,20 @@ This platform utilizes a decoupled architecture to balance editorial flexibility
 - **Intent-based Asset Loading:** Search CSS/JS assets are only injected into the DOM upon user interaction (shortcut `/` or click), ensuring the initial page load remains ultra-lean.
 - **Weighted Ranking:** Article headers are weighted (x10) over body content to ensure precision in search results.
 
-## 📊 Performance Baseline (v1.0.0)
+## Performance Baseline (v1.0.0)
 Validated via Lighthouse Audit:
 - **Total Blocking Time:** 0ms
 - **Cumulative Layout Shift:** 0
 - **Search Index Size:** 9KB
 - **Search Latency:** Sub-100ms (O(1) retrieval)
 
-## 📝 Content Features
+## Content Features
 - **Rich Text**: Portable text with headings, links, and custom blocks.
 - **Media**: Hero images, inline images with captions/alt text, and YouTube video embeds via shortcodes.
 - **Editorial Elements**: Pull quotes (editorial/left/right styles) with author citations.
 - **Taxonomies**: Categories and tags for organization, with navigation dropdowns and pagination.
 
-## 🎨 Design System
+## Design System
 - **Blinded UI Pattern:** A custom-engineered modal system for navigation and search that physically hides the main content to eliminate visual ghosting and focus user attention.
 - **Typography-First:** Minimalist aesthetic using serif-heavy editorial styles to mirror classic Tamil and investigative literature.
 - **Custom Theme:** TailwindCSS extended with semantic color variables (paper, ink, muted) and Lora font for readability.
@@ -65,8 +79,9 @@ Validated via Lighthouse Audit:
 
 ### Commands
 # Clone the repo
-git clone [https://github.com/your-username/mind-the-lines.git](https://github.com/your-username/mind-the-lines.git)
+git clone [https://github.com/Kartik199/mind-the-lines.git](https://github.com/Kartik199/mind-the-lines.git)
 
+```bash
 # Install dependencies
 npm install
 
@@ -77,5 +92,5 @@ npm run dev
 npm run build
 ```
 
-## 🚀 Deployment
+#  Deployment
 Configured for Netlify with automated builds. Publish directory: `public/`. Environment variables include Hugo and Node versions for consistency. The static-first approach ensures global CDN distribution with minimal server overhead.
