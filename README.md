@@ -5,7 +5,7 @@ A high-performance, minimalist editorial platform. Architected as a Jamstack sol
 [![v1.0.0](https://img.shields.io/badge/Release-v1.0.0-blue)](https://github.com/Kartik199/mind-the-lines/releases/tag/v1.0.0)
 
 ## 1. Technical Philosophy
-The architecture follows a **Static-First, Minimal-JS** philosophy. The goal is to provide a "paper-like" reading experience with sub-second latency and zero unnecessary client-side overhead. Designed this with performance-first principles: decoupling content from presentation, leveraging CDNs for global distribution, and minimizing runtime dependencies.
+The architecture follows a **Static-First, Minimal-JS** philosophy. The goal is to provide a "paper-like" reading experience with sub-second latency and zero unnecessary client-side overhead. Designed for performance-first principles: decoupling content from presentation, leveraging CDNs for global distribution, and minimizing runtime dependencies.
 
 ## 🛠 Technologies
 - **Static Site Generator**: Hugo for build-time rendering and content processing.
