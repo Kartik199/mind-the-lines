@@ -16,9 +16,7 @@ yarn-error.log*
 .eslintcache
 
 # --- CMS / Sanity ---
-# If you eventually have a local Sanity Studio inside this repo
 .sanity/
-# Environment variables (CRITICAL: Do not leak API keys)
 .env
 *.env.local
 *.env.development.local

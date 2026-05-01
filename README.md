@@ -71,7 +71,7 @@ Validated via Lighthouse Audit:
 
 ## Design System
 - **Blinded UI Pattern:** A custom-engineered modal system for navigation and search that physically hides the main content to eliminate visual ghosting and focus user attention.
-- **Typography-First:** Minimalist aesthetic using serif-heavy editorial styles to mirror classic Tamil and investigative literature.
+- **Typography-First:** Minimalist aesthetic using serif-heavy editorial styles to mirror editorial literature.
 - **Custom Theme:** TailwindCSS extended with semantic color variables (paper, ink, muted) and Lora font for readability.
 
 ## 4. Local Development
