@@ -4,8 +4,7 @@
         {{ $paginator := .Paginate .Site.RegularPages }}
         {{ range $paginator.Pages }}
 
-        <article
-            class="relative flex flex-col group bg-paper border border-ink/[0.03] rounded-sm p-8 shadow-sm hover:shadow-xl hover:border-ink/10 hover:-translate-y-1 transition-all duration-500 ease-out">
+        <article class="relative flex flex-col group bg-paper border border-ink/[0.03] rounded-sm p-8 shadow-sm hover:shadow-xl hover:border-ink/10 hover:-translate-y-1 transition-all duration-500 ease-out">
 
             {{ if .Params.heroImage }}
             <div class="mb-8 overflow-hidden rounded-xs aspect-video">
@@ -19,8 +18,7 @@
                     {{ .Date.Format "Jan 02, 2006" }}
                 </time>
                 {{ with .Params.categories }}
-                <span
-                    class="text-[10px] uppercase tracking-[0.25em] text-muted font-bold px-2 py-1 bg-ink/[0.03] rounded-xs">
+                <span class="text-[10px] uppercase tracking-[0.25em] text-muted font-bold px-2 py-1 bg-ink/[0.03] rounded-xs">
                     {{ index . 0 }}
                 </span>
                 {{ end }}
@@ -36,6 +34,7 @@
 
             <a href="{{ .Permalink }}" class="absolute inset-0 z-10" aria-label="Read {{ .Title }}"></a>
         </article>
+
         {{ end }}
     </div>
 

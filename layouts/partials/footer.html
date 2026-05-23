@@ -13,11 +13,28 @@
     <div id="reading-progress"></div>
 
     <script>
-        window.onscroll = () => {
+        const progressBar = document.getElementById("reading-progress");
+        const backToTop = document.getElementById("back-to-top");
+
+        window.addEventListener('scroll', () => {
             const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
             const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            document.getElementById("reading-progress").style.width = ((winScroll / height) * 100) + "%";
-        };
+
+            if (progressBar) {
+                progressBar.style.width = ((winScroll / height) * 100) + "%";
+            }
+
+            if (backToTop) {
+                const visible = winScroll > 400;
+                backToTop.classList.toggle('opacity-0', !visible);
+                backToTop.classList.toggle('translate-y-4', !visible);
+                backToTop.classList.toggle('pointer-events-none', !visible);
+            }
+        });
+
+        if (backToTop) {
+            backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        }
 
         const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {

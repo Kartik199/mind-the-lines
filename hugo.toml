@@ -5,7 +5,6 @@ pagerSize = 6
 
 [taxonomies]
   category = "categories"
-  tag = "tags"
 
 [permalinks]
   categories = "/categories/:slug/"

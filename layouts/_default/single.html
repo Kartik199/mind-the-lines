@@ -22,14 +22,27 @@
         {{ .Content }}
     </div>
 
-    {{ if .Params.tags }}
-    <footer class="mt-24 pt-10 border-t border-ink/5 flex gap-4" data-pagefind-ignore>
-        {{ range .Params.tags }}
-        <span class="text-[10px] uppercase tracking-widest text-muted border border-ink/10 px-3 py-1 rounded-full">
-            #{{ . }}
-        </span>
+    {{ $currentPage := . }}
+    {{ $related := slice }}
+    {{ range .Site.RegularPages }}
+        {{ if and (ne .Permalink $currentPage.Permalink) (intersect .Params.categories $currentPage.Params.categories) }}
+            {{ $related = $related | append . }}
         {{ end }}
-    </footer>
+    {{ end }}
+    {{ $related = sort $related "Date" "desc" | first 3 }}
+
+    {{ if $related }}
+    <section class="mt-24 pt-10 border-t border-ink/5" data-pagefind-ignore>
+        <h2 class="text-[10px] uppercase tracking-[0.5em] text-muted font-bold mb-8">Continue Reading</h2>
+        <div class="flex flex-col gap-10">
+            {{ range $related }}
+            <a href="{{ .Permalink }}"
+                class="reveal-on-scroll font-serif italic text-xl text-ink underline decoration-ink/20 underline-offset-4 hover:decoration-ink transition-all leading-snug">
+                {{ .Title }}
+            </a>
+            {{ end }}
+        </div>
+    </section>
     {{ end }}
 </article>
 {{ end }}
