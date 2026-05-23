@@ -10,12 +10,12 @@
         <article
             class="relative flex flex-col group bg-paper border border-ink/[0.03] rounded-sm p-8 shadow-sm hover:shadow-xl hover:border-ink/10 hover:-translate-y-1 transition-all duration-500 ease-out">
 
-            <div class="mb-8 overflow-hidden rounded-xs aspect-video bg-ink/[0.02]">
-                {{ if .Params.heroImage }}
+            {{ if .Params.heroImage }}
+            <div class="mb-8 overflow-hidden rounded-xs aspect-video">
                 <img src="{{ .Params.heroImage }}" alt="{{ .Title }}"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000">
-                {{ end }}
             </div>
+            {{ end }}
 
             <div class="flex items-center justify-between mb-4">
                 <time class="text-[10px] uppercase tracking-[0.25em] text-muted/60 font-bold">
@@ -28,7 +28,7 @@
             </h2>
 
             <p class="text-muted leading-relaxed text-sm line-clamp-3 mb-2">
-                {{ .Summary | plainify }}
+                {{ .Params.summary }}
             </p>
 
             <a href="{{ .RelPermalink }}" class="absolute inset-0 z-10" aria-label="Read {{ .Title }}"></a>
