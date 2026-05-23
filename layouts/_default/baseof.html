@@ -10,6 +10,23 @@
     <link rel="manifest" href="/favicon/site.webmanifest">
     <link rel="shortcut icon" href="/favicon/favicon.ico">
     <title>{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} — {{ .Site.Title }}{{ end }}</title>
+
+    {{ $description := cond .IsHome .Site.Params.description (.Params.summary | default .Site.Params.description) }}
+    {{ $ogImage := cond .IsHome (.Site.Params.ogImage | default "") (.Params.heroImage | default (.Site.Params.ogImage | default "")) }}
+
+    <meta name="description" content="{{ $description }}">
+
+    <meta property="og:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }} — {{ .Site.Title }}{{ end }}">
+    <meta property="og:description" content="{{ $description }}">
+    <meta property="og:type" content="{{ if .IsHome }}website{{ else }}article{{ end }}">
+    <meta property="og:url" content="{{ .Permalink }}">
+    {{ if $ogImage }}<meta property="og:image" content="{{ $ogImage }}">{{ end }}
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ if .IsHome }}{{ .Site.Title }}{{ else }}{{ .Title }}{{ end }}">
+    <meta name="twitter:description" content="{{ $description }}">
+    {{ if $ogImage }}<meta name="twitter:image" content="{{ $ogImage }}">{{ end }}
+
     {{ $css := resources.Get "css/main.css" | postCSS | minify | fingerprint }}
     <link rel="stylesheet" href="{{ $css.RelPermalink }}">
 </head>

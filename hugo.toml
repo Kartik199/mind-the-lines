@@ -13,6 +13,7 @@ pagerSize = 6
 
 [params]
   description = "A journal of cinema, society, and the lines that stay."
+  ogImage = ""
 
 [markup]
   [markup.goldmark]
