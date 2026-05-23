@@ -22,9 +22,19 @@ function processChildren(block) {
     if (!block.children) return '';
     return block.children.map(child => {
         let text = child.text;
-        if (child.marks && child.marks.length > 0) {
-            const linkMark = block.markDefs.find(def => def._key === child.marks[0] && def._type === 'link');
-            if (linkMark) return `[${text}](${linkMark.href})`;
+        if (!child.marks || child.marks.length === 0) return text;
+
+        for (const mark of child.marks) {
+            const markDef = (block.markDefs || []).find(def => def._key === mark);
+            if (markDef) {
+                if (markDef._type === 'link') text = `[${text}](${markDef.href})`;
+            } else {
+                if (mark === 'strong') text = `**${text}**`;
+                else if (mark === 'em') text = `*${text}*`;
+                else if (mark === 'code') text = "`" + text + "`";
+                else if (mark === 'underline') text = `<u>${text}</u>`;
+                else if (mark === 'strike-through') text = `~~${text}~~`;
+            }
         }
         return text;
     }).join('');
@@ -82,6 +92,15 @@ async function fetchPosts() {
         if (!fs.existsSync(postsDir)) {
             fs.mkdirSync(postsDir, { recursive: true });
         }
+
+        const activeSlugs = new Set(posts.map(p => `${p.slug}.md`));
+
+        fs.readdirSync(postsDir)
+            .filter(file => file.endsWith('.md') && !activeSlugs.has(file))
+            .forEach(file => {
+                fs.unlinkSync(path.join(postsDir, file));
+                console.log(`Removed stale post: ${file}`);
+            });
 
         posts.forEach(post => {
             const filePath = path.join(postsDir, `${post.slug}.md`);
