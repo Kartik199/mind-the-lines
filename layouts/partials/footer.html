@@ -1,16 +1,28 @@
 <footer class="py-20 border-t border-ink/5 mt-20">
-    <div class="reading-container text-center">
-        <p class="text-[10px] uppercase tracking-[0.4em] text-muted">
+    <div class="reading-container flex flex-col items-center gap-6 text-center">
+        <p class="text-[10px] uppercase tracking-[0.4em] text-muted font-bold">
             Mind the Lines
         </p>
-        <div class="mt-4 flex justify-center gap-6">
-            <a href="/"
-                class="text-[9px] uppercase tracking-widest text-muted hover:text-ink transition-colors">Home</a>
-            <a href="/categories/"
-                class="text-[9px] uppercase tracking-widest text-muted hover:text-ink transition-colors">Categories</a>
-        </div>
+        <p class="font-serif italic text-muted text-sm">
+            {{ .Site.Params.description }}
+        </p>
+        <nav class="flex items-center gap-2 text-[9px] uppercase tracking-widest font-bold text-muted">
+            <a href="/" class="hover:text-ink transition-colors">Home</a>
+            <span class="text-ink/20">·</span>
+            <a href="/categories/" class="hover:text-ink transition-colors">Categories</a>
+            <span class="text-ink/20">·</span>
+            <a href="/about/" class="hover:text-ink transition-colors">About</a>
+        </nav>
+        <p class="text-[9px] uppercase tracking-widest text-muted/50">
+            © {{ now.Year }} Kartikeyan Sundaresan
+        </p>
     </div>
     <div id="reading-progress"></div>
+
+    <button id="back-to-top" aria-label="Back to top"
+        class="hidden md:block fixed bottom-8 right-8 z-50 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none text-[9px] uppercase tracking-[0.3em] font-bold text-muted hover:text-ink bg-paper border border-ink/10 hover:border-ink/20 rounded-full px-4 py-3">
+        ↑ Top
+    </button>
 
     <script>
         const progressBar = document.getElementById("reading-progress");
