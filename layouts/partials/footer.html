@@ -1,23 +1,52 @@
 <footer class="py-20 border-t border-ink/5 mt-20">
-    <div class="reading-container text-center">
-        <p class="text-[10px] uppercase tracking-[0.4em] text-muted">
+    <div class="reading-container flex flex-col items-center gap-6 text-center">
+        <p class="text-[10px] uppercase tracking-[0.4em] text-muted font-bold">
             Mind the Lines
         </p>
-        <div class="mt-4 flex justify-center gap-6">
-            <a href="/"
-                class="text-[9px] uppercase tracking-widest text-muted hover:text-ink transition-colors">Home</a>
-            <a href="/categories/"
-                class="text-[9px] uppercase tracking-widest text-muted hover:text-ink transition-colors">Categories</a>
-        </div>
+        <p class="font-serif italic text-muted text-sm">
+            {{ .Site.Params.description }}
+        </p>
+        <nav class="flex items-center gap-2 text-[9px] uppercase tracking-widest font-bold text-muted">
+            <a href="/" class="hover:text-ink transition-colors">Home</a>
+            <span class="text-ink/20">·</span>
+            <a href="/categories/" class="hover:text-ink transition-colors">Categories</a>
+            <span class="text-ink/20">·</span>
+            <a href="/about/" class="hover:text-ink transition-colors">About</a>
+        </nav>
+        <p class="text-[9px] uppercase tracking-widest text-muted/50">
+            © {{ now.Year }} Kartikeyan Sundaresan
+        </p>
     </div>
     <div id="reading-progress"></div>
 
+    <button id="back-to-top" aria-label="Back to top"
+        class="hidden md:block fixed bottom-8 right-8 z-50 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none text-[9px] uppercase tracking-[0.3em] font-bold text-muted hover:text-ink bg-paper border border-ink/10 hover:border-ink/20 rounded-full px-4 py-3">
+        ↑ Top
+    </button>
+
     <script>
-        window.onscroll = () => {
+        const progressBar = document.getElementById("reading-progress");
+        const backToTop = document.getElementById("back-to-top");
+
+        window.addEventListener('scroll', () => {
             const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
             const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            document.getElementById("reading-progress").style.width = ((winScroll / height) * 100) + "%";
-        };
+
+            if (progressBar) {
+                progressBar.style.width = ((winScroll / height) * 100) + "%";
+            }
+
+            if (backToTop) {
+                const visible = winScroll > 400;
+                backToTop.classList.toggle('opacity-0', !visible);
+                backToTop.classList.toggle('translate-y-4', !visible);
+                backToTop.classList.toggle('pointer-events-none', !visible);
+            }
+        });
+
+        if (backToTop) {
+            backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        }
 
         const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
