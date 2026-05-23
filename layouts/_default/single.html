@@ -4,13 +4,15 @@
         <div class="flex items-center gap-4 mb-4 text-[10px] uppercase tracking-[0.5em] text-muted font-bold"
             data-pagefind-ignore>
             <time>{{ .Date.Format "January 02, 2006" }}</time>
+            <span class="h-[1px] w-8 bg-ink/10"></span>
+            <span>{{ .ReadingTime }} min read</span>
             {{ with .Params.categories }}
             <span class="h-[1px] w-8 bg-ink/10"></span>
             {{ range . }}<span>{{ . }}</span>{{ end }}
             {{ end }}
         </div>
 
-        <h1 class="text-5xl md:text-6xl font-serif italic text-ink leading-[1.1] tracking-tight" data-pagefind-body
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif italic text-ink leading-[1.1] tracking-tight" data-pagefind-body
             data-pagefind-weight="10" data-pagefind-meta="title">
             {{ .Title }}
         </h1>
