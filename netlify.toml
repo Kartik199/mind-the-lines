@@ -1,8 +1,16 @@
 [build]
   publish = "public"
-  command = "npm run build"
+  command = "npm run fetch && hugo --gc --minify --baseURL $URL && npx pagefind --site public"
 
 [build.environment]
-  HUGO_VERSION = "0.145.0" 
+  HUGO_VERSION = "0.145.0"
   HUGO_ENV = "production"
   NODE_VERSION = "20"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"

@@ -18,9 +18,13 @@
                     {{ .Date.Format "Jan 02, 2006" }}
                 </time>
                 {{ with .Params.categories }}
-                <span class="text-[10px] uppercase tracking-[0.25em] text-muted font-bold px-2 py-1 bg-ink/[0.03] rounded-xs">
-                    {{ index . 0 }}
-                </span>
+                <div class="flex gap-1 flex-wrap justify-end">
+                    {{ range . }}
+                    <span class="text-[10px] uppercase tracking-[0.25em] text-muted font-bold px-2 py-1 bg-ink/[0.03] rounded-xs">
+                        {{ . }}
+                    </span>
+                    {{ end }}
+                </div>
                 {{ end }}
             </div>
 

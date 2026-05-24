@@ -102,9 +102,7 @@
 
                 if (e.key === 'Escape') {
                     triggerSearch(false);
-                    if (typeof toggleUI === 'function') {
-                        toggleUI(document.getElementById('mobile-nav'), 'mobile-menu-active', false);
-                    }
+                    toggleUI(document.getElementById('mobile-nav'), 'mobile-menu-active', false);
                 }
             });
         });

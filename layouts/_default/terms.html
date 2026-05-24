@@ -10,7 +10,7 @@
             <button
                 class="category-toggle w-full flex items-center justify-between py-10 group cursor-pointer outline-none">
                 <div class="text-left">
-                    <h2 class="text-2xl md:text-2xl font-serif text-ink group-hover:italic transition-all capitalize">
+                    <h2 class="text-2xl font-serif text-ink group-hover:italic transition-all capitalize">
                         {{ .Page.Title }}
                     </h2>
                     <p class="category-description hidden mt-4 text-muted text-sm italic font-serif max-w-md">
@@ -18,7 +18,7 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-8">
-                    <span class="text-[10px] font-serif italic text-muted">0{{ .Count }} Stories</span>
+                    <span class="text-[10px] font-serif italic text-muted">{{ .Count }} {{ if eq .Count 1 }}Story{{ else }}Stories{{ end }}</span>
                     <span class="toggle-icon text-2xl transition-transform duration-300">+</span>
                 </div>
             </button>
@@ -29,10 +29,10 @@
                     <li>
                         <a href="{{ .RelPermalink }}"
                             class="group flex flex-col md:flex-row md:items-baseline justify-between gap-2">
-                            <h3 class="text-1xl font-serif text-ink group-hover:text-muted transition-colors">
+                            <h3 class="text-xl font-serif text-ink group-hover:text-muted transition-colors">
                                 {{ .Title }}
                             </h3>
-                            <time class="text-[2px] uppercase tracking-widest text-muted whitespace-nowrap">
+                            <time class="text-[10px] uppercase tracking-widest text-muted whitespace-nowrap">
                                 {{ .Date.Format "Jan 2006" }}
                             </time>
                         </a>
@@ -40,7 +40,7 @@
                     {{ end }}
                     <li class="pt-4">
                         <a href="{{ .Page.Permalink }}"
-                            class="text-[2px] uppercase tracking-[0.3em] font-bold text-ink hover:opacity-60 transition-opacity">
+                            class="text-[10px] uppercase tracking-[0.3em] font-bold text-ink hover:opacity-60 transition-opacity">
                             View Full Section →
                         </a>
                     </li>

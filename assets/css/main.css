@@ -43,7 +43,8 @@
 
     /* SCROLL REVEAL */
     .reveal-on-scroll {
-        @apply opacity-0 translate-y-6 transition-all duration-1000 ease-out;
+        @apply opacity-0 translate-y-6 duration-1000 ease-out;
+        transition-property: opacity, transform;
     }
 
     .reveal-on-scroll.is-visible {
@@ -69,11 +70,19 @@
             @apply italic text-ink border-l-2 border-t-2 border-ink/20;
             float: left;
             font-size: 5rem;
-            line-height: 0.85;
-            margin-top: 0.25rem;
+            line-height: 0.75;
+            margin-top: 0.1rem;
             margin-right: 0.85rem;
             padding: 0.5rem 0.75rem;
-            initial-letter: 3;
+        }
+
+        @supports (initial-letter: 3) {
+            .prose-content>p:first-of-type::first-letter {
+                float: none;
+                line-height: normal;
+                margin-top: 0;
+                initial-letter: 3;
+            }
         }
     }
 
@@ -120,7 +129,8 @@
     }
 
     .prose-content p {
-        @apply mb-10 leading-relaxed text-lg text-left opacity-0 translate-y-6 transition-all duration-1000 ease-out;
+        @apply mb-10 leading-relaxed text-lg text-left opacity-0 translate-y-6 duration-1000 ease-out;
+        transition-property: opacity, transform;
         @apply md:text-justify md:hyphens-auto;
         text-wrap: pretty;
     }
