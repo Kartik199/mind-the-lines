@@ -206,7 +206,7 @@ createClient({
     title,
     "slug": slug.current,
     "publishedAt": coalesce(publishedAt, _createdAt),
-    "heroImage": heroImage.asset->url,
+    "heroImage": heroImage,
     summary,
     "categories": categories[]->{ "title": title },
     body
@@ -215,7 +215,7 @@ createClient({
 
 **Field notes:**
 - `publishedAt` falls back to `_createdAt` via `coalesce` — posts without an explicit publish date use creation date.
-- `heroImage` dereferences the asset and returns the raw Sanity CDN URL (used in frontmatter). Body images go through the `imageUrlBuilder` pipeline instead.
+- `heroImage` returns the full image object (not just the asset URL) so `fetch-posts.js` can pass it through the `imageUrlBuilder` pipeline to generate responsive srcset URLs at multiple widths.
 - `categories` dereferences the category documents to get their titles as strings.
 - `body` is a portable text array containing mixed block types.
 
@@ -263,6 +263,18 @@ The `imageUrlBuilder.default` check handles both ESM and CJS module export shape
 
 Body images are fetched with: `.width(1200).fit('max').auto('format')` — capped at 1200px wide, never upscaled.
 
+**Hero image srcset generation (LCP optimisation):** For each post's hero image, three width variants are generated at build time and stored in frontmatter:
+
+```js
+const w800  = urlFor(post.heroImage).width(800).fit('max').url();
+const w1200 = urlFor(post.heroImage).width(1200).fit('max').url();
+const w1600 = urlFor(post.heroImage).width(1600).fit('max').url();
+heroImage = w1200;                                            // default src
+heroImageSrcset = `${w800} 800w, ${w1200} 1200w, ${w1600} 1600w`;
+```
+
+Both `heroImage` and `heroImageSrcset` are written to frontmatter, so templates can wire up `src` + `srcset` + `sizes` without any client-side JS.
+
 ### Stale File Cleanup
 
 After writing all posts from Sanity, the script reads the `content/posts/` directory and deletes any `.md` files whose slugs were not returned in the current fetch:
@@ -290,7 +302,8 @@ A fatal Sanity connection error does abort with `process.exit(1)`, which causes 
 ---
 title: Post Title
 date: '2026-04-18T12:48:31Z'
-heroImage: 'https://cdn.sanity.io/images/...'
+heroImage: 'https://cdn.sanity.io/images/.../w=1200'
+heroImageSrcset: 'https://cdn.sanity.io/.../w=800 800w, .../w=1200 1200w, .../w=1600 1600w'
 summary: Post summary text
 categories:
   - Films and society
@@ -314,9 +327,9 @@ The `blocksToMarkdown` function converts each Sanity portable text block to Hugo
 | Inline `underline` mark | `<u>text</u>` |
 | Inline `strike-through` mark | `~~text~~` |
 | Inline `link` markDef | `[text](href)` |
-| `inlineQuote` with `editorial` style | `<blockquote class="editorial-quote reveal-on-scroll">` |
-| `inlineQuote` with `pull-left` style | `<aside class="pull-quote left reveal-on-scroll">` |
-| `inlineQuote` with `pull-right` style | `<aside class="pull-quote right reveal-on-scroll">` |
+| `inlineQuote` with `editorial` style | `<blockquote class="editorial-quote reveal-on-scroll"><p class="quote-text">"…"</p></blockquote>` |
+| `inlineQuote` with `pull-left` style | `<aside class="pull-quote left reveal-on-scroll">"…"</aside>` (text wrapped in literal `"…"`, no `<p>` tag) |
+| `inlineQuote` with `pull-right` style | `<aside class="pull-quote right reveal-on-scroll">"…"</aside>` (same as pull-left) |
 | `youtube` | `{{< youtube VIDEO_ID >}}` Hugo shortcode |
 | `image` | `<figure class="editorial-figure reveal-on-scroll">` with lazy-loaded `<img>` and optional `<figcaption>` |
 
@@ -331,6 +344,7 @@ YouTube URL parsing supports both `?v=VIDEO_ID` (youtube.com) and `youtu.be/VIDE
 The HTML shell for every page. Responsibilities:
 
 - **Meta tags**: Dynamic title (`Page Title — Site Title` or just `Site Title` on home), description (falls back to site description), OG/Twitter card tags. `ogImage` uses post `heroImage` on single pages, site-level `ogImage` param as fallback.
+- **Hero image preload (LCP)**: On non-home pages that have a `heroImage`, a `<link rel="preload" as="image">` tag is injected into `<head>` with `imagesrcset` and `imagesizes` attributes so the browser begins fetching the LCP image before the layout is parsed.
 - **CSS**: Hugo's asset pipeline processes `assets/css/main.css` through PostCSS, then minifies and fingerprints it. The fingerprinted URL is injected as a `<link>` tag.
 - **Search modal**: A `#search-modal` div is always in the DOM but hidden. Pagefind's JS/CSS assets are injected on first open (lazy-loaded, not in `<head>`).
 - **Search triggers**: `#search-trigger` (desktop pill button), `#search-trigger-mobile` (mobile icon), `#search-close` button, keyboard shortcut `/`, `Escape` to dismiss.
@@ -349,6 +363,8 @@ The HTML shell for every page. Responsibilities:
 - Responsive grid: 1 → 2 → 3 → 4 columns at `md` / `lg` / `2xl` breakpoints.
 - Hugo paginator: `{{ .Paginate .Site.RegularPages }}` with `pagerSize = 6`.
 - Each card: hero image (aspect-video, zoom-on-hover), date, category badges, title, summary (3-line clamp), full-card `<a>` overlay using `position: absolute; inset: 0`.
+- **Responsive images**: Card images use `srcset` (800w / 1200w / 1600w) and `sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"` so the browser selects the appropriate width for the viewport.
+- **LCP / lazy loading**: The first card (`$index == 0`) gets `fetchpriority="high"` to prioritise the above-the-fold LCP image. All subsequent cards get `loading="lazy"`.
 - Pagination controls only render when `$paginator.TotalPages > 1`.
 
 ### single.html (article)
@@ -356,6 +372,7 @@ The HTML shell for every page. Responsibilities:
 - Reading container: `max-width: 68ch` (set in CSS via `body:not(.home) .reading-container`).
 - Article header: date, reading time (Hugo's `.ReadingTime`), categories.
 - Title `<h1>` carries Pagefind weight attributes: `data-pagefind-weight="10"` and `data-pagefind-body`. Body content has `data-pagefind-body` without weight — this is what makes headers rank 10x over body text in search.
+- **Hero image (LCP)**: Rendered immediately after the article header as a full-width `aspect-video` image. Uses `srcset` (800w / 1200w / 1600w) with `sizes="(max-width: 640px) 100vw, 700px"` and `fetchpriority="high"` — the preload tag in `baseof.html` and this `fetchpriority` attribute together ensure the hero is the browser's top-priority fetch.
 - **Related articles**: Hugo template logic (no plugin) — iterates `Site.RegularPages`, filters by shared category using `intersect`, sorts by date desc, takes `first 3`. Rendered as plain italic serif links.
 
 ### taxonomy.html (category archive)
@@ -380,13 +397,17 @@ The HTML shell for every page. Responsibilities:
 Responsive 16:9 iframe wrapper using the padding-top trick:
 
 ```html
-<div style="padding-top: 56.25%; height: 0; position: relative;">
-    <iframe src="https://www.youtube.com/embed/{{ .Get 0 }}" 
-            class="absolute top-0 left-0 w-full h-full border-0" 
-            allowfullscreen>
-    </iframe>
+<div class="my-10 w-full clear-both">
+    <div class="relative w-full shadow-2xl bg-black" style="padding-top: 56.25%; height: 0;">
+        <iframe src="https://www.youtube.com/embed/{{ .Get 0 }}"
+                class="absolute top-0 left-0 w-full h-full border-0"
+                style="margin: 0; padding: 0; vertical-align: top;" allowfullscreen>
+        </iframe>
+    </div>
 </div>
 ```
+
+The outer `clear-both` wrapper ensures the embed clears any floating pull quotes. The inner div holds the aspect-ratio trick; `shadow-2xl bg-black` gives the embed a cinematic appearance.
 
 `{{ .Get 0 }}` receives the video ID from `{{< youtube VIDEO_ID >}}` in content.
 
@@ -431,18 +452,22 @@ An inline SVG `feTurbulence` fractalNoise filter is used as a background texture
 ### Drop Cap
 
 Applied to `.prose-content > p:first-of-type::first-letter` on desktop (`min-width: 768px`):
-- Fallback: `float: left; font-size: 5rem; line-height: 0.75` with a partial border (left + top, 20% ink opacity).
-- Progressive enhancement: `@supports (initial-letter: 3)` uses CSS `initial-letter: 3` which handles the line-spanning automatically without floats.
-- Explicitly disabled on `.about-page` with `all: unset !important`.
+- Fallback: `float: left; font-size: 5rem; line-height: 0.75; margin-top: 0.1rem; margin-right: 0.85rem; padding: 0.5rem 0.75rem` with `border-l-2 border-t-2 border-ink/20` (left + top border at 20% ink opacity) and `italic`.
+- Progressive enhancement: `@supports (initial-letter: 3)` uses CSS `initial-letter: 3` which resets the float-based fallback automatically without manual positioning.
+- Explicitly disabled on `.about-page` with `all: unset !important` (plus explicit resets for `-webkit-initial-letter`, `float`, `margin`, `padding`, `display`, `font-size`, `line-height`).
 
 ### Pull Quotes
 
 ```css
-.pull-quote.left  { float: left;  margin-left:  -6rem; margin-right: 2.5rem; }
-.pull-quote.right { float: right; margin-right: -6rem; margin-left:  2.5rem; }
+/* base — applies on all screen sizes */
+.pull-quote { @apply md:w-1/2 my-8 p-6 border-l-4 border-ink/20 italic text-xl; }
+
+/* floated bleed — only at md+ */
+.pull-quote.left  { @apply md:float-left  md:-ml-24 md:mr-10; }
+.pull-quote.right { @apply md:float-right md:-mr-24 md:ml-10; }
 ```
 
-Pull quotes bleed outside the `68ch` reading column at the `md` breakpoint. They stack inline on mobile.
+`-ml-24` / `-mr-24` is `-6rem` and `mr-10` / `ml-10` is `2.5rem` in Tailwind's default scale. Pull quotes bleed outside the `68ch` reading column at the `md` breakpoint. They stack inline on mobile (the `md:` prefix means the float and negative margins do not apply below the breakpoint).
 
 ### Scroll Reveal
 
@@ -461,7 +486,7 @@ All JavaScript is inline in layout templates. There are no external JS files and
 ```
 search lazy-load: on first open, creates <script> and <link> tags for
 /pagefind/pagefind-ui.js and /pagefind/pagefind-ui.css, initialises
-PagefindUI({ element: "#search", showImages: false })
+PagefindUI({ element: "#search", showImages: false, translations: { placeholder: " " } })
 ```
 
 - `searchLoaded` flag prevents re-initialisation on subsequent opens.

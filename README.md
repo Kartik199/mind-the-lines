@@ -46,9 +46,8 @@ graph LR
 ### 3.1 Headless Content Management (Sanity.io)
 - **Structured Content:** Utilizing Sanity's GROQ (Graph-Relational Object Queries) to fetch deeply nested editorial data.
 - **Schemas**: Posts include title, slug, published date, summary, categories (referencing category documents), hero image, and rich body content (portable text blocks, images, YouTube embeds, inline quotes with styles).
-- **Image Optimization:** Leveraging Sanity's Asset Pipeline to serve transformed, CDN-cached images with auto-formatting and width constraints.
+- **Image Optimization:** Leveraging Sanity's Asset Pipeline to serve transformed, CDN-cached images with auto-formatting. Hero images are pre-built at three widths (800w / 1200w / 1600w) at fetch time, written into frontmatter as `srcset` strings, and delivered to templates with `fetchpriority="high"` and `<link rel="preload">` for optimal LCP.
 - **Publish Webhook:** Content published in Sanity automatically triggers a Netlify rebuild via a configured build hook, keeping the live site in sync without requiring a code push.
-- **Roadmap:** Implement dynamic resizing and `srcset` generation to optimize the LCP (currently 2.1s) to sub-1s.
 
 ### 3.2 Static Site Generation (Hugo)
 - **Build-time Integration:** Sanity data is consumed during the build process via `fetch-posts.js`, a custom Node.js script that converts GROQ results to Hugo-compatible Markdown with YAML frontmatter.
@@ -60,12 +59,22 @@ graph LR
 - **Intent-based Asset Loading:** Search CSS/JS assets are only injected into the DOM upon user interaction (shortcut `/` or click), ensuring the initial page load remains ultra-lean.
 - **Weighted Ranking:** Article headers are weighted (x10) over body content to ensure precision in search results.
 
-## Performance Baseline (v1.0.0)
-Validated via Lighthouse Audit:
-- **Total Blocking Time:** 0ms
-- **Cumulative Layout Shift:** 0
-- **Search Index Size:** 9KB
-- **Search Latency:** Sub-100ms (O(1) retrieval)
+## Performance Baseline (v1.5.0)
+Measured 2026-06-08 via Lighthouse CLI against a local production build (`npm run build`). Lighthouse uses simulated throttling (4G mobile); LCP is dominated by hero images fetched from the Sanity CDN over the network and will be lower in production.
+
+| Metric | Homepage | Single post |
+|---|---|---|
+| Performance score | 92 | 86 |
+| First Contentful Paint | 1.7 s | 3.2 s |
+| Largest Contentful Paint | 3.2 s | 3.2 s |
+| Total Blocking Time | 0 ms | 0 ms |
+| Cumulative Layout Shift | 0 | 0 |
+| Speed Index | 1.7 s | 3.2 s |
+
+**Search:**
+- Search index content (fragment + index data): ~40 KB for 5 posts — scales linearly with content
+- Pagefind runtime (UI + WASM): ~400 KB, lazy-loaded on first search open
+- Search latency: sub-100ms after index is loaded (client-side, O(1) retrieval)
 
 ## Content Features
 - **Rich Text**: Portable text with headings (h1–h6), inline marks (bold, italic, code, underline, strikethrough), and hyperlinks.
