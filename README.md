@@ -60,16 +60,16 @@ graph LR
 - **Weighted Ranking:** Article headers are weighted (x10) over body content to ensure precision in search results.
 
 ## Performance Baseline (v1.5.0)
-Measured 2026-06-08 via Lighthouse CLI against a local production build (`npm run build`). Lighthouse uses simulated throttling (4G mobile); LCP is dominated by hero images fetched from the Sanity CDN over the network and will be lower in production.
+Measured 2026-06-08 via Lighthouse (simulated 4G mobile throttling). Homepage measured against the live Netlify production deployment; single post measured against a local production build (`npm run build`).
 
 | Metric | Homepage | Single post |
 |---|---|---|
-| Performance score | 92 | 86 |
-| First Contentful Paint | 1.7 s | 3.2 s |
-| Largest Contentful Paint | 3.2 s | 3.2 s |
+| Performance score | 94 | 86 |
+| First Contentful Paint | 2.2 s | 3.2 s |
+| Largest Contentful Paint | 2.2 s | 3.2 s |
 | Total Blocking Time | 0 ms | 0 ms |
 | Cumulative Layout Shift | 0 | 0 |
-| Speed Index | 1.7 s | 3.2 s |
+| Speed Index | 4.6 s | 3.2 s |
 
 **Search:**
 - Search index content (fragment + index data): ~40 KB for 5 posts — scales linearly with content
