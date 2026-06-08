@@ -18,6 +18,16 @@
         </h1>
     </header>
 
+    {{ with .Params.heroImage }}
+    <div class="mb-12 overflow-hidden">
+        <img src="{{ . }}"
+            {{ with $.Params.heroImageSrcset }}srcset="{{ . }}" sizes="(max-width: 640px) 100vw, 700px"{{ end }}
+            alt="{{ $.Title }}"
+            fetchpriority="high"
+            class="w-full aspect-video object-cover">
+    </div>
+    {{ end }}
+
     <div class="prose-content" data-pagefind-body>
         {{ .Content }}
     </div>

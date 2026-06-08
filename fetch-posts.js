@@ -90,7 +90,7 @@ async function fetchPosts() {
         title,
         "slug": slug.current,
         "publishedAt": coalesce(publishedAt, _createdAt),
-        "heroImage": heroImage.asset->url,
+        "heroImage": heroImage,
         summary,
         "categories": categories[]->{ "title": title },
         body
@@ -110,10 +110,20 @@ async function fetchPosts() {
         try {
             if (!post.slug) throw new Error('Missing slug');
             const filePath = path.join(postsDir, `${post.slug}.md`);
+            let heroImage = '';
+            let heroImageSrcset = '';
+            if (post.heroImage) {
+                const w800  = urlFor(post.heroImage).width(800).fit('max').url();
+                const w1200 = urlFor(post.heroImage).width(1200).fit('max').url();
+                const w1600 = urlFor(post.heroImage).width(1600).fit('max').url();
+                heroImage = w1200;
+                heroImageSrcset = `${w800} 800w, ${w1200} 1200w, ${w1600} 1600w`;
+            }
             const frontmatter = `---\n${yaml.dump({
                 title: post.title,
                 date: post.publishedAt,
-                heroImage: post.heroImage || '',
+                heroImage,
+                heroImageSrcset,
                 summary: post.summary || '',
                 categories: post.categories ? post.categories.map(c => c.title) : [],
                 slug: post.slug
