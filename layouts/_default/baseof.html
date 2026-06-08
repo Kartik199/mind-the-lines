@@ -27,6 +27,10 @@
     <meta name="twitter:description" content="{{ $description }}">
     {{ if $ogImage }}<meta name="twitter:image" content="{{ $ogImage }}">{{ end }}
 
+    {{ if and (not .IsHome) .Params.heroImage }}
+    <link rel="preload" as="image" href="{{ .Params.heroImage }}"{{ with .Params.heroImageSrcset }} imagesrcset="{{ . }}" imagesizes="(max-width: 640px) 100vw, 700px"{{ end }}>
+    {{ end }}
+
     {{ $css := resources.Get "css/main.css" | postCSS | minify | fingerprint }}
     <link rel="stylesheet" href="{{ $css.RelPermalink }}">
 </head>
