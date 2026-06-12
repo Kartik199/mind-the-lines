@@ -4,6 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        // Runs before first paint: marks JS as available (scroll-reveal opt-in)
+        // and applies the saved or OS-preferred theme to avoid a flash.
+        (function () {
+            var root = document.documentElement;
+            root.classList.add('js');
+            var theme;
+            try { theme = localStorage.getItem('theme'); } catch (e) { }
+            if (theme !== 'light' && theme !== 'dark') {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            root.setAttribute('data-theme', theme);
+        })();
+    </script>
+    <meta name="theme-color" content="#F5F2E9">
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
@@ -27,6 +42,9 @@
     <meta name="twitter:description" content="{{ $description }}">
     {{ if $ogImage }}<meta name="twitter:image" content="{{ $ogImage }}">{{ end }}
 
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/lora-latin.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/lora-italic-latin.woff2" crossorigin>
+
     {{ if and (not .IsHome) .Params.heroImage }}
     <link rel="preload" as="image" href="{{ .Params.heroImage }}"{{ with .Params.heroImageSrcset }} imagesrcset="{{ . }}" imagesizes="(max-width: 640px) 100vw, 700px"{{ end }}>
     {{ end }}
@@ -35,7 +53,7 @@
     <link rel="stylesheet" href="{{ $css.RelPermalink }}">
 </head>
 
-<body class="flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen{{ if .IsHome }} home{{ end }}">
     {{ partial "header.html" . }}
 
     <main class="flex-grow pt-32">
@@ -49,9 +67,9 @@
         data-pagefind-ignore>
         <div class="w-full max-w-2xl h-full flex flex-col">
             <div class="flex justify-between items-center mb-12 flex-shrink-0">
-                <span class="text-[10px] uppercase tracking-[0.5em] text-muted font-bold">Search</span>
+                <span class="label-wide text-muted">Search</span>
                 <button id="search-close"
-                    class="text-muted hover:text-ink font-serif italic text-sm border-none bg-transparent">Close
+                    class="text-muted hover:text-ink font-serif italic text-sm border-none bg-transparent cursor-pointer">Close
                     [Esc]</button>
             </div>
             <div id="search" class="flex-grow overflow-y-auto pb-20"></div>
@@ -97,6 +115,26 @@
             document.getElementById('mobile-menu-open')?.addEventListener('click', () => toggleUI(mobileNav, 'mobile-menu-active', true));
             document.getElementById('mobile-nav-close')?.addEventListener('click', () => toggleUI(mobileNav, 'mobile-menu-active', false));
 
+            const themeColors = { light: '#F5F2E9', dark: '#1A1814' };
+            const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+            const applyThemeUI = () => {
+                const theme = document.documentElement.getAttribute('data-theme');
+                if (themeMeta) themeMeta.content = themeColors[theme] || themeColors.light;
+                document.querySelectorAll('.theme-toggle').forEach(btn => {
+                    btn.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+                });
+            };
+            applyThemeUI();
+
+            document.querySelectorAll('.theme-toggle').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    document.documentElement.setAttribute('data-theme', next);
+                    try { localStorage.setItem('theme', next); } catch (e) { }
+                    applyThemeUI();
+                });
+            });
 
             window.addEventListener('keydown', (e) => {
                 if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {

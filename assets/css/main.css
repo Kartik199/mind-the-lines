@@ -1,11 +1,63 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap');
 @import "tailwindcss";
 
+/* Lora — self-hosted variable font (400–700), downloaded from Google Fonts v37 */
+@font-face {
+    font-family: 'Lora';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('/fonts/lora-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Lora';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('/fonts/lora-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Lora';
+    font-style: italic;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('/fonts/lora-italic-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Lora';
+    font-style: italic;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('/fonts/lora-italic-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 @theme {
+    /* Core palette — overridden under [data-theme="dark"] below */
     --color-paper: #F5F2E9;
     --color-ink: #1A1A1A;
-    --color-muted: #717171;
+    --color-muted: #6B6A62;
+
+    /* Derived surfaces: hairline rules and faint washes, always relative to ink */
+    --color-line: color-mix(in oklab, var(--color-ink) 10%, transparent);
+    --color-wash: color-mix(in oklab, var(--color-ink) 4%, transparent);
+
     --font-serif: "Lora", "Georgia", "Times New Roman", serif;
+
+    /* Micro-label role: one size, two tracking widths */
+    --text-label: 0.6875rem;
+    --tracking-label: 0.25em;
+    --tracking-label-wide: 0.4em;
+
+    /* Warm ink-tinted shadows */
+    --shadow-card: 0 1px 2px rgb(28 24 18 / 0.05), 0 10px 30px -18px rgb(28 24 18 / 0.25);
+    --shadow-lifted: 0 2px 4px rgb(28 24 18 / 0.08), 0 24px 48px -24px rgb(28 24 18 / 0.4);
+
     --spacing-reading: 68ch;
     --spacing-grid: 1400px;
     --animate-reveal: reveal 0.8s cubic-bezier(0.2, 0, 0.2, 1) forwards;
@@ -23,10 +75,64 @@
     }
 }
 
+/* Engraved-label role used across headers, meta rows, captions, footers */
+@utility label {
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+@utility label-wide {
+    font-size: var(--text-label);
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
 @layer base {
+    :root {
+        color-scheme: light;
+    }
+
+    [data-theme="dark"] {
+        color-scheme: dark;
+        --color-paper: #1A1814;
+        --color-ink: #E9E4D8;
+        --color-muted: #A39D8F;
+        --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 30px -18px rgb(0 0 0 / 0.6);
+        --shadow-lifted: 0 2px 4px rgb(0 0 0 / 0.35), 0 24px 48px -24px rgb(0 0 0 / 0.7);
+    }
+
     body {
         font-family: var(--font-serif);
         @apply bg-paper text-ink antialiased relative;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Theme toggle: moon shown in light mode, sun in dark */
+    .icon-sun {
+        display: none;
+    }
+
+    [data-theme="dark"] .icon-sun {
+        display: block;
+    }
+
+    [data-theme="dark"] .icon-moon {
+        display: none;
+    }
+
+    /* Soften photography against the dark ground */
+    [data-theme="dark"] main img {
+        filter: brightness(0.88);
+    }
+
+    :focus-visible {
+        outline: 1.5px solid var(--color-ink);
+        outline-offset: 3px;
     }
 
     body.mobile-menu-active main,
@@ -41,14 +147,32 @@
         @apply fixed top-0 left-0 h-[2px] bg-ink z-[10000] transition-all duration-150 ease-out;
     }
 
-    /* SCROLL REVEAL */
-    .reveal-on-scroll {
-        @apply opacity-0 translate-y-6 duration-1000 ease-out;
-        transition-property: opacity, transform;
-    }
+    /* SCROLL REVEAL — only hides content when JS is running and motion is allowed,
+       so articles stay readable without JavaScript and for reduced-motion readers */
+    @media (prefers-reduced-motion: no-preference) {
 
-    .reveal-on-scroll.is-visible {
-        @apply opacity-100 translate-y-0;
+        .js .reveal-on-scroll,
+        .js .prose-content p {
+            @apply opacity-0 translate-y-6 duration-1000 ease-out;
+            transition-property: opacity, transform;
+        }
+
+        .js .reveal-on-scroll.is-visible,
+        .js .prose-content p.is-visible {
+            @apply opacity-100 translate-y-0;
+        }
+
+        .js .prose-content p:nth-child(1) {
+            transition-delay: 0.1s;
+        }
+
+        .js .prose-content p:nth-child(2) {
+            transition-delay: 0.2s;
+        }
+
+        .js .prose-content p:nth-child(3) {
+            transition-delay: 0.3s;
+        }
     }
 
     body::before {
@@ -64,8 +188,12 @@
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
+    [data-theme="dark"] body::before {
+        opacity: 0.05;
+    }
+
     @media (min-width: 768px) {
-        .prose-content>p:first-of-type::first-letter {
+        .prose-content:not(.no-dropcap)>p:first-of-type::first-letter {
             font-family: var(--font-serif);
             @apply italic text-ink border-l-2 border-t-2 border-ink/20;
             float: left;
@@ -77,7 +205,7 @@
         }
 
         @supports (initial-letter: 3) {
-            .prose-content>p:first-of-type::first-letter {
+            .prose-content:not(.no-dropcap)>p:first-of-type::first-letter {
                 float: none;
                 line-height: normal;
                 margin-top: 0;
@@ -86,29 +214,64 @@
         }
     }
 
-    .about-page .prose-content>p:first-of-type::first-letter {
-        all: unset !important;
-        initial-letter: normal !important;
-        /* This removes the reserved vertical 3-line gap */
-        -webkit-initial-letter: normal !important;
-        float: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: inline !important;
-        font-size: inherit !important;
-        line-height: inherit !important;
-    }
-
-    .about-page .prose-content>p:first-of-type {
-        @apply mt-0 pt-0;
-    }
-
     .prose-content a {
         @apply text-ink underline decoration-ink/30 underline-offset-4 hover:decoration-ink transition-all font-medium;
     }
 
+    .prose-content p {
+        @apply mb-10 leading-relaxed text-lg text-left md:hyphens-auto;
+        text-wrap: pretty;
+    }
+
+    /* Prose type ramp — Sanity can emit h1–h6 into article bodies */
+    .prose-content :is(h1, h2) {
+        @apply font-serif text-2xl md:text-3xl text-ink leading-snug mt-16 mb-6;
+        text-wrap: balance;
+    }
+
+    .prose-content h3 {
+        @apply font-serif italic text-xl md:text-2xl text-ink leading-snug mt-12 mb-5;
+    }
+
+    .prose-content :is(h4, h5, h6) {
+        @apply font-serif font-semibold text-lg text-ink mt-10 mb-4;
+    }
+
+    .prose-content :is(ul, ol) {
+        @apply mb-10 pl-6 space-y-3 text-lg leading-relaxed;
+    }
+
+    .prose-content ul {
+        @apply list-disc;
+    }
+
+    .prose-content ol {
+        @apply list-decimal;
+    }
+
+    .prose-content li::marker {
+        @apply text-muted;
+    }
+
+    .prose-content code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        @apply text-[0.85em] bg-wash px-1.5 py-0.5 rounded-xs;
+    }
+
+    .prose-content hr {
+        @apply my-16 mx-auto w-16 border-line;
+    }
+
+    .prose-content blockquote:not(.editorial-quote) {
+        @apply my-10 pl-6 border-l-2 border-line italic;
+    }
+
+    .prose-content blockquote:not(.editorial-quote) p:last-child {
+        @apply mb-0;
+    }
+
     .editorial-quote {
-        @apply my-10 py-10 px-8 border-y border-ink/10 bg-ink/[0.02] flex flex-col items-center text-center relative;
+        @apply my-10 py-10 px-8 border-y border-line bg-wash flex flex-col items-center text-center relative;
     }
 
     .editorial-quote::before {
@@ -125,18 +288,7 @@
     }
 
     .quote-author {
-        @apply text-[10px] uppercase tracking-[0.4em] font-bold text-muted not-italic mt-4 block;
-    }
-
-    .prose-content p {
-        @apply mb-10 leading-relaxed text-lg text-left opacity-0 translate-y-6 duration-1000 ease-out;
-        transition-property: opacity, transform;
-        @apply md:text-justify md:hyphens-auto;
-        text-wrap: pretty;
-    }
-
-    .prose-content p.is-visible {
-        @apply opacity-100 translate-y-0;
+        @apply label text-muted not-italic mt-4 block;
     }
 
     .editorial-figure {
@@ -144,14 +296,14 @@
     }
 
     .editorial-figure img {
-        @apply rounded-sm shadow-2xl transition-transform duration-500 hover:scale-[1.02];
+        @apply rounded-sm shadow-lifted transition-transform duration-500 hover:scale-[1.02];
         max-width: 100%;
         max-height: 75vh;
         object-fit: contain;
     }
 
     .img-caption {
-        @apply mt-4 text-center text-[10px] uppercase tracking-[0.3em] text-muted font-bold;
+        @apply mt-4 text-center label text-muted;
         font-family: var(--font-serif);
         max-width: 80%;
     }
@@ -202,26 +354,73 @@
         @apply transition-all duration-300;
     }
 
-    .category-content:not(.hidden) {
-        animation: reveal 0.5s ease-out forwards;
+    @media (prefers-reduced-motion: no-preference) {
+        .category-content:not(.hidden) {
+            animation: reveal 0.5s ease-out forwards;
+        }
     }
 }
 
 @layer components {
+
+    /* Pagefind theming — keep results on the same paper as the rest of the site */
+    #search {
+        --pagefind-ui-scale: 1;
+        --pagefind-ui-primary: var(--color-ink);
+        --pagefind-ui-text: var(--color-ink);
+        --pagefind-ui-background: var(--color-paper);
+        --pagefind-ui-border: var(--color-line);
+        --pagefind-ui-tag: var(--color-wash);
+        --pagefind-ui-border-width: 1px;
+        --pagefind-ui-border-radius: 2px;
+        --pagefind-ui-font: var(--font-serif);
+    }
+
     .pagefind-ui__search-clear {
         @apply !hidden;
     }
 
+    .pagefind-ui__message {
+        @apply !label !text-muted !font-serif;
+    }
+
     .pagefind-ui__result {
-        @apply opacity-0 animate-reveal;
+        @apply !border-line opacity-0;
     }
 
-    .pagefind-ui__result:nth-child(1) {
-        animation-delay: 0.05s;
+    @media (prefers-reduced-motion: no-preference) {
+        .pagefind-ui__result {
+            @apply animate-reveal;
+        }
+
+        .pagefind-ui__result:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+
+        .pagefind-ui__result:nth-child(2) {
+            animation-delay: 0.1s;
+        }
     }
 
-    .pagefind-ui__result:nth-child(2) {
-        animation-delay: 0.1s;
+    @media (prefers-reduced-motion: reduce) {
+        .pagefind-ui__result {
+            opacity: 1;
+        }
+    }
+
+    .pagefind-ui__result-title .pagefind-ui__result-link {
+        @apply !font-serif !italic !font-normal !text-xl !text-ink;
+    }
+
+    .pagefind-ui__result-excerpt {
+        @apply !font-serif !text-sm !leading-relaxed !text-muted;
+    }
+
+    /* !important: Pagefind's own stylesheet is injected at runtime, after this one */
+    .pagefind-ui__result mark {
+        background: color-mix(in oklab, var(--color-ink) 14%, transparent) !important;
+        color: inherit !important;
+        @apply px-0.5 rounded-xs;
     }
 
     .pagefind-ui__search-wrapper {
@@ -229,36 +428,22 @@
     }
 
     .pagefind-ui__search-input {
-        @apply font-serif italic text-2xl md:text-4xl !border-b !border-t-0 !border-x-0 !rounded-none !px-0 focus:!outline-none !transition-all !bg-paper !relative;
-        border-color: rgba(26, 26, 26, 0.1) !important;
+        @apply font-serif italic text-2xl md:text-4xl !border-b !border-t-0 !border-x-0 !rounded-none !px-0 focus:!outline-none !transition-all !bg-paper !text-ink !relative;
+        border-color: var(--color-line) !important;
         padding-left: 2.5rem !important;
     }
 
     .pagefind-ui__search-wrapper::before {
         content: "";
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23717171' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-size: contain;
-        @apply absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 opacity-40 transition-all duration-300 pointer-events-none z-10;
+        background-color: var(--color-muted);
+        mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E");
+        mask-repeat: no-repeat;
+        mask-size: contain;
+        @apply absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 opacity-60 transition-all duration-300 pointer-events-none z-10;
     }
 
     .pagefind-ui__search-wrapper:focus-within::before,
     .pagefind-ui__search-wrapper:has(input:not(:placeholder-shown))::before {
         @apply opacity-0 -translate-x-2;
-    }
-
-}
-
-@layer utilities {
-    .prose-content p:nth-child(1) {
-        transition-delay: 0.1s;
-    }
-
-    .prose-content p:nth-child(2) {
-        transition-delay: 0.2s;
-    }
-
-    .prose-content p:nth-child(3) {
-        transition-delay: 0.3s;
     }
 }
