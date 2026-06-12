@@ -44,7 +44,18 @@ function processChildren(block) {
 
 function blocksToMarkdown(blocks) {
     if (!blocks) return '';
-    return blocks.map(block => {
+    const chunks = [];
+    // Consecutive list items are buffered and joined with single newlines so
+    // they become one tight markdown list instead of separate paragraphs.
+    let listBuffer = [];
+    const flushList = () => {
+        if (listBuffer.length) {
+            chunks.push(listBuffer.join('\n'));
+            listBuffer = [];
+        }
+    };
+
+    const blockToMarkdown = block => {
         if (block._type === 'block') {
             const text = processChildren(block);
             if (text.includes('{{< youtube')) return `\n\n${text}\n\n`;
@@ -82,7 +93,20 @@ function blocksToMarkdown(blocks) {
             return `\n\n<figure class="editorial-figure reveal-on-scroll">\n    <img src="${imageUrl}" alt="${altText}" class="lightbox-trigger cursor-zoom-in" loading="lazy" />\n    ${captionMarkup}\n</figure>\n\n`;
         }
         return '';
-    }).join('\n\n');
+    };
+
+    for (const block of blocks) {
+        if (block._type === 'block' && block.listItem) {
+            const indent = '    '.repeat(Math.max(0, (block.level || 1) - 1));
+            const marker = block.listItem === 'number' ? '1.' : '-';
+            listBuffer.push(`${indent}${marker} ${processChildren(block)}`);
+            continue;
+        }
+        flushList();
+        chunks.push(blockToMarkdown(block));
+    }
+    flushList();
+    return chunks.join('\n\n');
 }
 
 async function fetchPosts() {

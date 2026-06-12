@@ -1,14 +1,14 @@
 {{ define "main" }}
-<section class="reading-container py-32">
-    <header class="mb-20 border-b border-ink/10 pb-8 reveal-on-scroll">
-        <h1 class="text-5xl md:text-5xl font-serif italic text-ink tracking-tight">Categories</h1>
+<section class="reading-container pt-8 pb-24">
+    <header class="mb-16 border-b border-line pb-8 reveal-on-scroll">
+        <h1 class="text-5xl font-serif italic text-ink tracking-tight">Categories</h1>
     </header>
 
     <div class="space-y-4">
         {{ range .Data.Terms.Alphabetical }}
-        <div class="border-b border-ink/5 reveal-on-scroll">
+        <div class="border-b border-line reveal-on-scroll">
             <button
-                class="category-toggle w-full flex items-center justify-between py-10 group cursor-pointer outline-none">
+                class="category-toggle w-full flex items-center justify-between py-10 group cursor-pointer">
                 <div class="text-left">
                     <h2 class="text-2xl font-serif text-ink group-hover:italic transition-all capitalize">
                         {{ .Page.Title }}
@@ -18,13 +18,13 @@
                     </p>
                 </div>
                 <div class="flex items-center gap-8">
-                    <span class="text-[10px] font-serif italic text-muted">{{ .Count }} {{ if eq .Count 1 }}Story{{ else }}Stories{{ end }}</span>
+                    <span class="text-sm font-serif italic text-muted whitespace-nowrap">{{ .Count }} {{ if eq .Count 1 }}Story{{ else }}Stories{{ end }}</span>
                     <span class="toggle-icon text-2xl transition-transform duration-300">+</span>
                 </div>
             </button>
 
             <div class="category-content hidden pb-12 pl-4">
-                <ul class="space-y-6 border-l border-ink/10 pl-8">
+                <ul class="space-y-6 border-l border-line pl-8">
                     {{ range .Pages }}
                     <li>
                         <a href="{{ .RelPermalink }}"
@@ -32,7 +32,7 @@
                             <h3 class="text-xl font-serif text-ink group-hover:text-muted transition-colors">
                                 {{ .Title }}
                             </h3>
-                            <time class="text-[10px] uppercase tracking-widest text-muted whitespace-nowrap">
+                            <time class="label text-muted whitespace-nowrap">
                                 {{ .Date.Format "Jan 2006" }}
                             </time>
                         </a>
@@ -40,7 +40,7 @@
                     {{ end }}
                     <li class="pt-4">
                         <a href="{{ .Page.Permalink }}"
-                            class="text-[10px] uppercase tracking-[0.3em] font-bold text-ink hover:opacity-60 transition-opacity">
+                            class="label text-ink hover:text-muted transition-colors">
                             View Full Section →
                         </a>
                     </li>

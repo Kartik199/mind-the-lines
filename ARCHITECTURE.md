@@ -1,6 +1,7 @@
 # Mind the Lines — Architecture & Technical Reference
 
 Personal vault document. All details derived directly from source code.
+Last full audit: 2026-06-12.
 
 ---
 
@@ -11,22 +12,26 @@ Personal vault document. All details derived directly from source code.
 3. [Repository Structure](#3-repository-structure)
 4. [Build Pipeline](#4-build-pipeline)
 5. [Hugo Configuration](#5-hugo-configuration)
-6. [Content Layer — Sanity.io](#6-content-layer--sanitio)
+6. [Content Layer — Sanity.io](#6-content-layer--sanityio)
 7. [CMS Bridge — fetch-posts.js](#7-cms-bridge--fetch-postsjs)
 8. [Portable Text Conversion Map](#8-portable-text-conversion-map)
 9. [Template Reference](#9-template-reference)
 10. [CSS Architecture](#10-css-architecture)
-11. [JavaScript — Inline Scripts](#11-javascript--inline-scripts)
-12. [Deployment — Netlify](#12-deployment--netlify)
-13. [Environment Variables](#13-environment-variables)
-14. [Design System Tokens](#14-design-system-tokens)
-15. [README Assessment](#15-readme-assessment)
+11. [Design Tokens & Theming](#11-design-tokens--theming)
+12. [Typography & Self-Hosted Fonts](#12-typography--self-hosted-fonts)
+13. [JavaScript — Inline Scripts](#13-javascript--inline-scripts)
+14. [Accessibility & Resilience](#14-accessibility--resilience)
+15. [Performance](#15-performance)
+16. [Deployment — Netlify](#16-deployment--netlify)
+17. [Environment Variables](#17-environment-variables)
 
 ---
 
 ## 1. Project Overview
 
 **Mind the Lines** is a personal writing blog focused on cinema and society. The stack is Jamstack: Sanity.io as the headless CMS, Hugo as the static site generator, TailwindCSS v4 for styling, and Pagefind for client-side full-text search. There is no server, no runtime API, and no client-side data fetching — everything is baked at build time.
+
+The visual identity is "paper and ink": a warm off-white ground, near-black serif type (Lora, self-hosted), an SVG-noise grain overlay, and hairline rules. The site ships **light and dark themes** — the dark theme is a warm "lamplight" inversion of the same palette, toggled by a sun/moon button in the header and persisted in `localStorage`.
 
 The blog's tagline, sourced from `hugo.toml`: *"A journal of cinema, society, and the lines that stay."*
 
@@ -61,6 +66,8 @@ The blog's tagline, sourced from `hugo.toml`: *"A journal of cinema, society, an
 | Hugo | `0.145.0` | Static site generator |
 | Node.js | `20` | Runtime for fetch script and build tools |
 
+There is **no external font dependency**: Lora is self-hosted from `static/fonts/` (see §12). Google Fonts is no longer on the critical path.
+
 ---
 
 ## 3. Repository Structure
@@ -85,11 +92,16 @@ mind-the-lines/
 │   │   ├── taxonomy.html       # Category archive (filtered post grid)
 │   │   └── terms.html          # /categories/ accordion listing
 │   ├── partials/
-│   │   ├── header.html         # Fixed nav bar with search + categories dropdown
+│   │   ├── header.html         # Fixed nav bar + theme toggle + mobile nav overlay
 │   │   └── footer.html         # Footer + scroll progress + back-to-top + JS
 │   ├── shortcodes/
 │   │   └── youtube.html        # Responsive 16:9 YouTube iframe embed
-│   └── index.html              # Homepage paginated post grid
+│   └── index.html              # Homepage: masthead + paginated post grid
+├── static/
+│   ├── favicon/                # Favicon set + webmanifest
+│   └── fonts/                  # Self-hosted Lora woff2 (4 files, see §12)
+├── studio/
+│   └── mind-the-lines/         # Sanity Studio (separate npm package, own lockfile)
 ├── fetch-posts.js              # CMS bridge: Sanity → Hugo Markdown
 ├── hugo.toml                   # Hugo configuration
 ├── netlify.toml                # Netlify build + headers config
@@ -105,6 +117,9 @@ mind-the-lines/
 - `resources/_gen/` — PostCSS/Tailwind generated assets
 - `data/posts.json` — not currently used but listed
 - `.env` — credentials
+- `.claude/` — local AI-tooling config (launch.json, settings)
+
+`static/fonts/` **is** source-controlled — the woff2 files are served to visitors, they are not build artifacts.
 
 ---
 
@@ -122,7 +137,7 @@ Runs `node fetch-posts.js`. Queries Sanity, writes/updates/deletes files in `con
 ```
 npm run dev
 ```
-Runs `npm run fetch && hugo server -D`. Fetches latest content then starts Hugo's dev server with drafts enabled (`-D`). Does **not** run Pagefind — search does not work in dev.
+Runs `npm run fetch && hugo server -D`. Fetches latest content then starts Hugo's dev server with drafts enabled (`-D`). Pagefind is **not** run in dev; however, if a previous `npm run build` left an index in `public/pagefind/`, the dev server serves it and search works against that (possibly stale) index. On a clean checkout, search 404s in dev until a production build has run.
 
 ```
 npm run build
@@ -239,7 +254,7 @@ Based on the GROQ query and portable text handler:
 
 | `_type` | Description |
 |---|---|
-| `block` | Standard paragraph or heading; styles: `h1`–`h6`, `normal` |
+| `block` | Standard paragraph or heading; styles: `h1`–`h6`, `normal`. May carry `listItem` (`bullet` \| `number`) and `level` for list nesting |
 | `inlineQuote` | Pull quote; styles: `editorial`, `pull-left`, `pull-right`; optional `author` field |
 | `youtube` | YouTube embed; has `url` field (supports `?v=` and `youtu.be/` formats) |
 | `image` | Inline image; has `asset` reference, `alt`, `caption` |
@@ -248,7 +263,7 @@ Based on the GROQ query and portable text handler:
 
 ## 7. CMS Bridge — fetch-posts.js
 
-The script is the connective tissue between Sanity and Hugo. It runs before every build.
+The script is the connective tissue between Sanity and Hugo. It runs before every build. It is **build-time only** — it never executes in the visitor's browser, so its speed affects build duration, not page loading.
 
 ### Image URL Builder
 
@@ -259,7 +274,7 @@ function urlFor(source) {
 }
 ```
 
-The `imageUrlBuilder.default` check handles both ESM and CJS module export shapes from `@sanity/image-url`. `.auto('format')` lets Sanity serve WebP to supporting browsers automatically.
+The `imageUrlBuilder.default` check handles both ESM and CJS module export shapes from `@sanity/image-url`. `.auto('format')` lets Sanity serve WebP/AVIF to supporting browsers automatically.
 
 Body images are fetched with: `.width(1200).fit('max').auto('format')` — capped at 1200px wide, never upscaled.
 
@@ -275,9 +290,13 @@ heroImageSrcset = `${w800} 800w, ${w1200} 1200w, ${w1600} 1600w`;
 
 Both `heroImage` and `heroImageSrcset` are written to frontmatter, so templates can wire up `src` + `srcset` + `sizes` without any client-side JS.
 
+### List Grouping
+
+`blocksToMarkdown` buffers consecutive `block`s that carry a `listItem` property and joins them with single newlines, so they become one **tight** markdown list (`<li>` without wrapping `<p>` — important because `.prose-content p` carries paragraph margins and reveal animation). Nesting uses 4-space indentation per `level`; `bullet` maps to `-`, `number` to `1.` (Goldmark renumbers automatically). Any non-list block flushes the buffer.
+
 ### Stale File Cleanup
 
-After writing all posts from Sanity, the script reads the `content/posts/` directory and deletes any `.md` files whose slugs were not returned in the current fetch:
+After writing all posts from Sanity, the script reads the `content/posts/` directory and deletes any `.md` files whose names were not produced in the current fetch (`writtenSlugs` stores `<slug>.md` filenames):
 
 ```js
 fs.readdirSync(postsDir)
@@ -321,6 +340,8 @@ The `blocksToMarkdown` function converts each Sanity portable text block to Hugo
 |---|---|
 | `block` with `normal` style | Plain paragraph text |
 | `block` with `h1`–`h6` style | `#` through `######` Markdown headings |
+| `block` with `listItem: bullet` | `- item` (consecutive items grouped into one tight list; 4-space indent per `level`) |
+| `block` with `listItem: number` | `1. item` (same grouping; Goldmark renumbers) |
 | Inline `strong` mark | `**text**` |
 | Inline `em` mark | `*text*` |
 | Inline `code` mark | `` `text` `` |
@@ -331,9 +352,11 @@ The `blocksToMarkdown` function converts each Sanity portable text block to Hugo
 | `inlineQuote` with `pull-left` style | `<aside class="pull-quote left reveal-on-scroll">"…"</aside>` (text wrapped in literal `"…"`, no `<p>` tag) |
 | `inlineQuote` with `pull-right` style | `<aside class="pull-quote right reveal-on-scroll">"…"</aside>` (same as pull-left) |
 | `youtube` | `{{< youtube VIDEO_ID >}}` Hugo shortcode |
-| `image` | `<figure class="editorial-figure reveal-on-scroll">` with lazy-loaded `<img>` and optional `<figcaption>` |
+| `image` | `<figure class="editorial-figure reveal-on-scroll">` with lazy-loaded `<img class="lightbox-trigger">` and optional `<figcaption>` |
 
 YouTube URL parsing supports both `?v=VIDEO_ID` (youtube.com) and `youtu.be/VIDEO_ID` formats.
+
+All of the body block types have corresponding styles in `main.css`: paragraphs, the full `h1`–`h6` ramp, lists, inline code, `hr`, and plain blockquotes are covered under `.prose-content` (see §10).
 
 ---
 
@@ -343,54 +366,61 @@ YouTube URL parsing supports both `?v=VIDEO_ID` (youtube.com) and `youtu.be/VIDE
 
 The HTML shell for every page. Responsibilities:
 
-- **Meta tags**: Dynamic title (`Page Title — Site Title` or just `Site Title` on home), description (falls back to site description), OG/Twitter card tags. `ogImage` uses post `heroImage` on single pages, site-level `ogImage` param as fallback.
-- **Hero image preload (LCP)**: On non-home pages that have a `heroImage`, a `<link rel="preload" as="image">` tag is injected into `<head>` with `imagesrcset` and `imagesizes` attributes so the browser begins fetching the LCP image before the layout is parsed.
-- **CSS**: Hugo's asset pipeline processes `assets/css/main.css` through PostCSS, then minifies and fingerprints it. The fingerprinted URL is injected as a `<link>` tag.
-- **Search modal**: A `#search-modal` div is always in the DOM but hidden. Pagefind's JS/CSS assets are injected on first open (lazy-loaded, not in `<head>`).
-- **Search triggers**: `#search-trigger` (desktop pill button), `#search-trigger-mobile` (mobile icon), `#search-close` button, keyboard shortcut `/`, `Escape` to dismiss.
-- **Mobile nav**: `#mobile-nav` overlay toggled by `#mobile-menu-open` / `#mobile-nav-close`, with body class `mobile-menu-active`.
-- **Blinded UI**: When `search-active` or `mobile-menu-active` is on `<body>`, CSS hides `<main>` and `<footer>` entirely — no visual ghosting through the overlay.
+- **Pre-paint bootstrap script** (first element in `<head>`, inline, synchronous): adds a `js` class to `<html>` (scroll-reveal styles are gated on it — see §14) and resolves the theme (`localStorage.theme`, falling back to `prefers-color-scheme`) into a `data-theme` attribute on `<html>`. Running before CSS guarantees no theme flash and no hidden-content flash.
+- **Meta tags**: Dynamic title (`Page Title — Site Title` or just `Site Title` on home), description (falls back to site description), OG/Twitter card tags, and a `theme-color` meta kept in sync with the active theme by the toggle JS (`#F5F2E9` light / `#1A1814` dark).
+- **Font preloads**: `<link rel="preload" as="font">` for the latin normal + italic Lora files (both appear above the fold on every page).
+- **Hero image preload (LCP)**: On non-home pages that have a `heroImage`, a `<link rel="preload" as="image">` tag with `imagesrcset` and `imagesizes` so the browser begins fetching the LCP image before layout.
+- **CSS**: Hugo's asset pipeline processes `assets/css/main.css` through PostCSS, then minifies and fingerprints it.
+- **`home` body class**: `{{ if .IsHome }}home{{ end }}` — this is what makes the `body:not(.home) .reading-container` width rule in CSS actually selective.
+- **Search modal**: `#search-modal` is always in the DOM but hidden. Pagefind's JS/CSS assets are injected on first open (lazy-loaded, never on the critical path).
+- **Search triggers**: `#search-trigger` (desktop pill), `#search-trigger-mobile` (icon), `#search-close`, keyboard `/` to open, `Escape` to dismiss.
+- **Theme toggle wiring**: all `.theme-toggle` buttons flip `data-theme`, persist to `localStorage`, update the `theme-color` meta and their own `aria-label`.
+- **Blinded UI**: when `search-active` or `mobile-menu-active` is on `<body>`, CSS hides `<main>` and `<footer>` entirely — no ghosting through the overlay.
 
 ### header.html
 
 - Fixed position, `bg-paper/80 backdrop-blur-md` — frosted glass effect.
-- Desktop: site title left, search pill center, categories dropdown + About link right.
-- Categories dropdown: populated from `{{ range .Site.Taxonomies.categories }}` — Hugo's taxonomy system, no hardcoding.
-- Mobile: search icon + hamburger; the full mobile nav is a separate `#mobile-nav` full-screen overlay at `z-[200]`.
+- Site title is an `<h1>` **only on the homepage**; on all other pages it renders as `<p>` with identical classes, so articles have exactly one `<h1>` (their own title).
+- Desktop: title left, search pill center, categories dropdown + About + theme toggle right. Mobile: search icon + theme toggle + hamburger.
+- Categories dropdown: populated from `{{ range .Site.Taxonomies.categories }}`; opens on hover **and** keyboard focus (`group-focus-within` variants mirror every `group-hover` style).
+- Theme toggle: one button markup with both icons; CSS shows moon in light mode and sun in dark (`.icon-sun` / `.icon-moon` display rules keyed off `[data-theme]`).
+- **`#mobile-nav` lives outside `<header>`** (rendered as a sibling by the same partial). This is deliberate: `backdrop-filter` on the header makes it the containing block for `position: fixed` descendants, which used to clip the overlay to the 96px header bar. The overlay contains Home, About, the full category list, an "All Categories →" link, and the site description.
 
 ### index.html (homepage)
 
-- Responsive grid: 1 → 2 → 3 → 4 columns at `md` / `lg` / `2xl` breakpoints.
+- **Masthead**: on page 1 only, the site description renders as a centered italic line above the grid.
+- Responsive grid: 1 → 2 → 3 → 4 columns at `md` / `lg` / `2xl` breakpoints, inside the same `max-w-[1400px] px-6 md:px-12` container as the header (edges align).
 - Hugo paginator: `{{ .Paginate .Site.RegularPages }}` with `pagerSize = 6`.
-- Each card: hero image (aspect-video, zoom-on-hover), date, category badges, title, summary (3-line clamp), full-card `<a>` overlay using `position: absolute; inset: 0`.
-- **Responsive images**: Card images use `srcset` (800w / 1200w / 1600w) and `sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"` so the browser selects the appropriate width for the viewport.
-- **LCP / lazy loading**: The first card (`$index == 0`) gets `fetchpriority="high"` to prioritise the above-the-fold LCP image. All subsequent cards get `loading="lazy"`.
-- Pagination controls only render when `$paginator.TotalPages > 1`.
+- Each card: hero image (aspect-video, zoom-on-hover), date + category chips in a `flex-wrap` row (`whitespace-nowrap` per item — long category names wrap as whole units instead of colliding with the date), title, summary (3-line clamp), full-card `<a>` overlay.
+- **Responsive images**: `srcset` (800w / 1200w / 1600w) with `sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 33vw"`.
+- **LCP / lazy loading**: first card gets `fetchpriority="high"`; all subsequent cards `loading="lazy"`.
+- Pagination controls render only when `TotalPages > 1`; disabled states use full-strength `text-muted` (contrast floor, see §14).
 
 ### single.html (article)
 
-- Reading container: `max-width: 68ch` (set in CSS via `body:not(.home) .reading-container`).
-- Article header: date, reading time (Hugo's `.ReadingTime`), categories.
-- Title `<h1>` carries Pagefind weight attributes: `data-pagefind-weight="10"` and `data-pagefind-body`. Body content has `data-pagefind-body` without weight — this is what makes headers rank 10x over body text in search.
-- **Hero image (LCP)**: Rendered immediately after the article header as a full-width `aspect-video` image. Uses `srcset` (800w / 1200w / 1600w) with `sizes="(max-width: 640px) 100vw, 700px"` and `fetchpriority="high"` — the preload tag in `baseof.html` and this `fetchpriority` attribute together ensure the hero is the browser's top-priority fetch.
-- **Related articles**: Hugo template logic (no plugin) — iterates `Site.RegularPages`, filters by shared category using `intersect`, sorts by date desc, takes `first 3`. Rendered as plain italic serif links.
+- Reading container: `max-width: 68ch` (via `body:not(.home) .reading-container`).
+- Article meta row: date, reading time, categories as a `flex-wrap` row of `whitespace-nowrap` units; the hairline separators are hidden below `sm` so the row wraps cleanly on phones.
+- Title `<h1>` carries Pagefind weight attributes: `data-pagefind-weight="10"` and `data-pagefind-body` — headers rank 10× over body text in search.
+- **Hero image (LCP)**: full-width `aspect-video` with `srcset`, `sizes="(max-width: 640px) 100vw, 700px"`, `fetchpriority="high"`; combined with the preload in `baseof.html` it is the browser's top-priority fetch.
+- **Drop-cap suppression**: a build-time check (`.Content | plainify | htmlUnescape`, trimmed, first character tested against `“ " ‘ ' „ «`) adds a `no-dropcap` class when the article opens with a quotation mark — CSS `::first-letter` would otherwise pull the quote mark into the drop cap.
+- **Related articles**: pure Hugo template logic — iterates `Site.RegularPages`, filters by shared category using `intersect`, sorts by date desc, takes `first 3`.
 
 ### taxonomy.html (category archive)
 
-- Same responsive card grid as the homepage.
+- Same responsive card grid and container as the homepage.
 - Uses `.Paginator.Pages` (taxonomy-scoped) rather than `.Site.RegularPages`.
-- Section header shows the category name.
+- Section header shows the category name under a "Section Archive" label.
 
 ### terms.html (/categories/ page)
 
 - Accordion UI: each category is a `<button>` toggle. Click opens the post list and reveals the category description. Only one accordion can be open at a time.
-- Lists posts per category with title and `Jan 2006` date format, plus a "View Full Section →" link.
+- Lists posts per category with title and `Jan 2006` date, plus a "View Full Section →" link.
 - Toggle logic is inline `<script>` — no framework dependency.
 
 ### about.html
 
 - Minimal wrapper: `about-page reading-container` centered flex column.
-- The `about-page` class disables the drop cap CSS that applies to `.prose-content p:first-of-type::first-letter`.
+- The content div carries `no-dropcap` directly — same mechanism as quote-opening articles, replacing the old `all: unset !important` CSS override block.
 
 ### shortcodes/youtube.html
 
@@ -407,9 +437,11 @@ Responsive 16:9 iframe wrapper using the padding-top trick:
 </div>
 ```
 
-The outer `clear-both` wrapper ensures the embed clears any floating pull quotes. The inner div holds the aspect-ratio trick; `shadow-2xl bg-black` gives the embed a cinematic appearance.
+The outer `clear-both` wrapper ensures the embed clears any floating pull quotes. `{{ .Get 0 }}` receives the video ID from `{{< youtube VIDEO_ID >}}` in content.
 
-`{{ .Get 0 }}` receives the video ID from `{{< youtube VIDEO_ID >}}` in content.
+### Page-top rhythm
+
+`<main>` carries `pt-32` (8rem — clears the fixed 6rem header plus 2rem breathing room). Each page template then adds a small, consistent top pad: `pt-8` on home, articles, taxonomy, and terms; `pt-12` on About. This replaced the old mix of `pt-8`/`py-24`/`py-32` that left some pages with ~16rem of dead space above the title. The reading-progress bar is rendered only on article pages (`{{ if .IsPage }}`).
 
 ---
 
@@ -417,21 +449,43 @@ The outer `clear-both` wrapper ensures the embed clears any floating pull quotes
 
 **File:** `assets/css/main.css`
 
-Tailwind v4 is used. The v4 `@import "tailwindcss"` replaces the v3 `@tailwind base/components/utilities` directives. Configuration lives in the CSS file itself via `@theme`, not a `tailwind.config.js`.
+Tailwind v4 is used. The v4 `@import "tailwindcss"` replaces the v3 `@tailwind base/components/utilities` directives. Configuration lives in the CSS file itself via `@theme`, not a `tailwind.config.js`. Note the ordering constraint: `@import "tailwindcss"` must be the **first rule** in the file (CSS requires `@import` before any other rules, including `@font-face`) — placing anything above it silently breaks Tailwind's utility generation.
 
-### Theme Tokens (`@theme`)
+File layout, top to bottom:
 
-| Token | Value | Usage |
-|---|---|---|
-| `--color-paper` | `#F5F2E9` | Background — warm off-white, the "paper" |
-| `--color-ink` | `#1A1A1A` | Primary text and UI — near-black |
-| `--color-muted` | `#717171` | Secondary text, metadata, labels |
-| `--font-serif` | `"Lora", "Georgia", "Times New Roman", serif` | All body text |
-| `--spacing-reading` | `68ch` | Max-width for article body |
-| `--spacing-grid` | `1400px` | Max-width for homepage/header grid |
-| `--animate-reveal` | `reveal 0.8s cubic-bezier(0.2,0,0.2,1) forwards` | Scroll-in animation |
+1. `@import "tailwindcss"`
+2. Four `@font-face` blocks (self-hosted Lora — see §12)
+3. `@theme` — design tokens (see §11)
+4. Two `@utility` definitions — `label` and `label-wide`
+5. `@layer base` — dark-theme variable overrides, element styles, prose styles, components like quotes/figures
+6. `@layer components` — Pagefind theming
 
-The `reveal` keyframe animates from `opacity: 0; translateY(1rem)` to `opacity: 1; translateY(0)`.
+### Label utilities
+
+The "engraved label" role (tracked uppercase micro-text used in headers, meta rows, captions, footers) is defined once as custom utilities instead of ad-hoc `text-[10px] tracking-[0.3em]` combinations:
+
+```css
+@utility label      { font-size: var(--text-label); letter-spacing: var(--tracking-label); … }
+@utility label-wide { /* same, with var(--tracking-label-wide) */ }
+```
+
+11px (`0.6875rem`), bold, uppercase; `0.25em` tracking (standard) or `0.4em` (wide — used for "Search", "Continue Reading", "Section Archive"). Use one or the other, never both on the same element. Templates always pair them with a color class (`label text-muted`).
+
+### Prose type ramp
+
+`.prose-content` covers every element the CMS can emit:
+
+| Element | Treatment |
+|---|---|
+| `p` | `text-lg leading-relaxed mb-10`, rag-right (`text-left`) with `md:hyphens-auto` and `text-wrap: pretty`. **Not justified** — browser justification produces rivers at 68ch |
+| `h1`, `h2` | `text-2xl md:text-3xl leading-snug mt-16 mb-6`, `text-wrap: balance` |
+| `h3` | italic, `text-xl md:text-2xl mt-12 mb-5` |
+| `h4`–`h6` | `text-lg font-semibold mt-10 mb-4` |
+| `ul` / `ol` | `pl-6 space-y-3`, disc/decimal, muted markers |
+| `code` | monospace stack, `0.85em`, `bg-wash`, rounded |
+| `hr` | short centered rule (`w-16 mx-auto my-16`) |
+| `blockquote` (plain markdown) | `border-l-2 border-line pl-6 italic` (distinct from `.editorial-quote`) |
+| `a` | ink underline at 30% decoration opacity, full on hover |
 
 ### Paper Texture
 
@@ -442,99 +496,181 @@ body::before {
     inset: 0;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.08;
+    opacity: 0.08;            /* 0.05 in dark mode */
     background-image: url("data:image/svg+xml,...fractalNoise...");
 }
 ```
 
-An inline SVG `feTurbulence` fractalNoise filter is used as a background texture overlay at 8% opacity across the entire viewport. This creates the subtle paper grain effect without any image asset.
+An inline SVG `feTurbulence` fractalNoise filter creates the paper grain without an image asset. Dark mode lowers it to 5% opacity.
 
 ### Drop Cap
 
-Applied to `.prose-content > p:first-of-type::first-letter` on desktop (`min-width: 768px`):
-- Fallback: `float: left; font-size: 5rem; line-height: 0.75; margin-top: 0.1rem; margin-right: 0.85rem; padding: 0.5rem 0.75rem` with `border-l-2 border-t-2 border-ink/20` (left + top border at 20% ink opacity) and `italic`.
-- Progressive enhancement: `@supports (initial-letter: 3)` uses CSS `initial-letter: 3` which resets the float-based fallback automatically without manual positioning.
-- Explicitly disabled on `.about-page` with `all: unset !important` (plus explicit resets for `-webkit-initial-letter`, `float`, `margin`, `padding`, `display`, `font-size`, `line-height`).
+Applied to `.prose-content:not(.no-dropcap) > p:first-of-type::first-letter` on desktop (`min-width: 768px`):
+- Fallback: `float: left; font-size: 5rem` with a left+top border corner mark, italic.
+- Progressive enhancement: `@supports (initial-letter: 3)` uses CSS `initial-letter: 3`, resetting the float fallback.
+- The `no-dropcap` escape hatch is set by templates: always on the About page, and on any article that opens with a quotation mark (CSS `::first-letter` includes preceding punctuation per spec, which produced a `"A` drop cap).
 
 ### Pull Quotes
 
 ```css
-/* base — applies on all screen sizes */
-.pull-quote { @apply md:w-1/2 my-8 p-6 border-l-4 border-ink/20 italic text-xl; }
-
-/* floated bleed — only at md+ */
-.pull-quote.left  { @apply md:float-left  md:-ml-24 md:mr-10; }
-.pull-quote.right { @apply md:float-right md:-mr-24 md:ml-10; }
+.pull-quote        { @apply md:w-1/2 my-8 p-6 border-l-4 border-ink/20 italic text-xl; }
+.pull-quote.left   { @apply md:float-left  md:-ml-24 md:mr-10; }
+.pull-quote.right  { @apply md:float-right md:-mr-24 md:ml-10; }
 ```
 
-`-ml-24` / `-mr-24` is `-6rem` and `mr-10` / `ml-10` is `2.5rem` in Tailwind's default scale. Pull quotes bleed outside the `68ch` reading column at the `md` breakpoint. They stack inline on mobile (the `md:` prefix means the float and negative margins do not apply below the breakpoint).
+Pull quotes bleed `-6rem` outside the 68ch reading column at `md+`, and stack inline on mobile.
 
-### Scroll Reveal
+### Pagefind theming
 
-Two approaches:
-1. `.reveal-on-scroll` class: `opacity: 0; translateY: 1.5rem` until `.is-visible` is added by IntersectionObserver.
-2. `.prose-content p`: same animation with `transition-delay` staggered for the first 3 paragraphs (0.1s, 0.2s, 0.3s).
+Pagefind's UI is themed through its own CSS custom properties, set on `#search` (`--pagefind-ui-font: var(--font-serif)`, `--pagefind-ui-text/background/border/tag` mapped to the site tokens) plus targeted overrides: italic serif result titles, muted serif excerpts, `label`-styled result counts. Because Pagefind injects its stylesheet **at runtime** (after `main.css` in the cascade), the `mark` highlight override needs `!important` — it replaces the default yellow with an ink-tinted wash that works in both themes. Since the variables reference site tokens, search inherits dark mode for free.
 
 ---
 
-## 11. JavaScript — Inline Scripts
+## 11. Design Tokens & Theming
+
+All tokens are defined in `@theme` (Tailwind v4 emits them as CSS custom properties and generates matching utilities). Dark mode works by **overriding the custom properties** under `[data-theme="dark"]` in `@layer base` — every utility (`bg-paper`, `text-ink`, `border-line`, …) resolves through `var()` at paint time, so no second set of dark classes exists anywhere in the templates.
+
+### Core palette
+
+| Token | Light | Dark | Usage |
+|---|---|---|---|
+| `--color-paper` | `#F5F2E9` | `#1A1814` | Background. Dark is a warm charcoal, not neutral gray |
+| `--color-ink` | `#1A1A1A` | `#E9E4D8` | Text and UI. Dark is warm off-white |
+| `--color-muted` | `#6B6A62` | `#A39D8F` | Secondary text. Both pass WCAG AA (≈5:1) against their paper |
+
+### Derived tokens (auto-flip with the palette)
+
+| Token | Definition | Usage |
+|---|---|---|
+| `--color-line` | `color-mix(in oklab, var(--color-ink) 10%, transparent)` | All hairline borders/dividers |
+| `--color-wash` | `color-mix(…ink 4%…)` | Faint fills: category chips, code, quote backgrounds, hover states |
+
+Because both are mixed from `var(--color-ink)` at computed-value time, the dark override of `--color-ink` cascades into them automatically.
+
+### Shadows (explicit per theme — shadows must stay dark)
+
+| Token | Light | Dark |
+|---|---|---|
+| `--shadow-card` | warm ink-tinted, subtle | deeper black |
+| `--shadow-lifted` | warm ink-tinted, pronounced (hover/dropdown/figures) | deeper black |
+
+### Other tokens
+
+| Token | Value | Usage |
+|---|---|---|
+| `--font-serif` | `"Lora", "Georgia", "Times New Roman", serif` | Everything |
+| `--text-label` | `0.6875rem` (11px) | Micro-label size floor |
+| `--tracking-label` / `--tracking-label-wide` | `0.25em` / `0.4em` | The only two label trackings |
+| `--spacing-reading` | `68ch` | Article column |
+| `--spacing-grid` | `1400px` | Header/home grid |
+| `--animate-reveal` | `reveal 0.8s cubic-bezier(0.2,0,0.2,1) forwards` | Scroll-in animation |
+
+### Theme switching mechanics
+
+1. Inline `<head>` script (pre-paint) reads `localStorage.theme`; if unset, falls back to `prefers-color-scheme`. Sets `data-theme` on `<html>` — no flash of wrong theme.
+2. `.theme-toggle` buttons (desktop nav + mobile header) flip the attribute, persist the choice, update `meta[name=theme-color]` and their `aria-label`.
+3. Icon swap is pure CSS: moon visible in light mode, sun in dark.
+4. `color-scheme: light|dark` is set on the root so native UI (scrollbars, form controls) matches.
+5. `body` transitions `background-color`/`color` over 0.3s for a soft switch.
+6. Dark mode additionally dims content images (`main img { filter: brightness(0.88) }`) and reduces grain opacity.
+
+### Misc reference
+
+| Concern | Value |
+|---|---|
+| Header height | `h-24` (6rem) |
+| Z-index layers | header 50, mobile-nav 200, search-modal 1000, grain 9999, reading-progress 10000, lightbox 10001 |
+| Date formats | cards `Jan 02, 2006` · article header `January 02, 2006` · category lists `Jan 2006` |
+
+---
+
+## 12. Typography & Self-Hosted Fonts
+
+Lora (variable, weight axis 400–700, upright + italic) is self-hosted from `static/fonts/` — four woff2 files (~120KB total), downloaded from Google Fonts v37:
+
+| File | Coverage |
+|---|---|
+| `lora-latin.woff2` | Latin, normal |
+| `lora-latin-ext.woff2` | Latin extended, normal |
+| `lora-italic-latin.woff2` | Latin, italic |
+| `lora-italic-latin-ext.woff2` | Latin extended, italic |
+
+Each `@font-face` declares `font-weight: 400 700` (variable range), `font-display: swap`, and the original `unicode-range` subsets so extended glyphs only download when used. The two latin files are preloaded in `<head>`.
+
+**Why self-hosted:** the previous `@import url(fonts.googleapis.com/…)` inside `main.css` created a render-blocking chain — main.css → Google's CSS (new origin: DNS/TLS) → font files (second origin). Removing it was the single largest performance win measured (§15). Fallback chain is Georgia → Times New Roman, which Lora swaps over via `font-display: swap`.
+
+---
+
+## 13. JavaScript — Inline Scripts
 
 All JavaScript is inline in layout templates. There are no external JS files and no framework.
 
-### baseof.html — Search & Nav
+### baseof.html — bootstrap, search, nav, theme
 
-```
-search lazy-load: on first open, creates <script> and <link> tags for
-/pagefind/pagefind-ui.js and /pagefind/pagefind-ui.css, initialises
-PagefindUI({ element: "#search", showImages: false, translations: { placeholder: " " } })
-```
+- **Pre-paint script** (in `<head>`, before CSS): `js` class + `data-theme` resolution. Wrapped `localStorage` access in `try/catch` (private-mode safety).
+- **Search lazy-load**: on first open, injects `<script>`/`<link>` for `/pagefind/pagefind-ui.js|css`, initialises `PagefindUI({ element: "#search", showImages: false })`, focuses the input after 150ms. A `searchLoaded` flag prevents re-init.
+- `/` opens search unless focus is in an `INPUT`/`TEXTAREA`; `Escape` closes search and mobile nav.
+- **Theme toggle**: flips `data-theme`, persists, syncs `theme-color` meta (`#F5F2E9`/`#1A1814`) and button `aria-label`s.
+- Body classes `search-active` / `mobile-menu-active` drive the blinded-UI CSS.
 
-- `searchLoaded` flag prevents re-initialisation on subsequent opens.
-- After Pagefind loads, focuses the input after 150ms (timing for transition to settle).
-- `/` key triggers search unless focus is in an `INPUT` or `TEXTAREA`.
-- `Escape` key closes both search modal and mobile nav.
-- Body class `search-active` / `mobile-menu-active` controls the blinded UI via CSS.
+### footer.html — scroll effects
 
-### footer.html — Scroll Effects
+- **Reading progress bar**: RAF-throttled scroll handler sets width %; the element only exists on article pages.
+- **Back-to-top**: appears after 400px scroll; `scrollTo` uses `behavior: 'smooth'` only when the user does not prefer reduced motion.
+- **Scroll reveal**: if `prefers-reduced-motion: reduce`, all reveal targets get `is-visible` immediately (no observer). Otherwise an `IntersectionObserver` (threshold 0.1) adds `is-visible` and unobserves.
+- **Lightbox**: `.lightbox-trigger` images get `tabindex="0"` + `role="button"` and respond to Enter/Space as well as click. The modal is `role="dialog" aria-modal="true"` with an `aria-label` from the image alt, closes on click **or Escape**, restores focus to the trigger, and only animates when motion is allowed. Backdrop is a fixed near-black (`rgb(12,11,9)/95`) in both themes — a light backdrop in dark mode would be jarring.
 
-**Reading progress bar:**
-```js
-// RAF-throttled scroll handler
-progressBar.style.width = ((winScroll / height) * 100) + "%";
-```
-A `rafPending` flag prevents multiple `requestAnimationFrame` calls per scroll burst.
-
-**Back-to-top button:**
-Appears (opacity transition) after scrolling 400px. Smooth-scrolls to top on click.
-
-**Scroll reveal (IntersectionObserver):**
-```js
-const revealObserver = new IntersectionObserver(callback, { threshold: 0.1 });
-document.querySelectorAll('.reveal-on-scroll, .prose-content p').forEach(el => revealObserver.observe(el));
-```
-Once an element is 10% visible, `is-visible` is added and the element is `unobserve()`d.
-
-**Lightbox:**
-```js
-document.querySelectorAll('.lightbox-trigger').forEach(img => {
-    img.onclick = () => {
-        const modal = document.createElement('div');
-        modal.className = "fixed inset-0 bg-ink/98 z-[10001] ...";
-        modal.innerHTML = `<img src="${img.src}" ...>`;
-        modal.onclick = () => modal.remove();
-        document.body.appendChild(modal);
-    };
-});
-```
-Click any `.lightbox-trigger` image to open a full-screen modal. Click modal to dismiss.
-
-### terms.html — Category Accordion
+### terms.html — category accordion
 
 Click a category button: collapses all open panels, then toggles the clicked one open. Icon switches between `+` and `−`.
 
 ---
 
-## 12. Deployment — Netlify
+## 14. Accessibility & Resilience
+
+Deliberate decisions, all verified in code:
+
+- **Content is readable without JavaScript.** The hidden initial state for scroll-reveal (`opacity: 0`) only applies under `.js` on `<html>`, which is added by script. No JS → no class → everything visible.
+- **`prefers-reduced-motion` is honored everywhere**: the reveal/hidden states are wrapped in `@media (prefers-reduced-motion: no-preference)`; the observer script applies `is-visible` instantly under reduce; smooth scrolling and Pagefind result animation are likewise gated.
+- **Contrast floor**: `--color-muted` is the dimmest text color used (≈5:1 in both themes). No text uses opacity-reduced muted variants; hierarchy is expressed through size/tracking instead.
+- **Focus**: a global `:focus-visible` outline (1.5px ink, 3px offset) replaces the removed `outline-none`s. The categories dropdown opens via `group-focus-within`, not just hover.
+- **Semantics**: one `<h1>` per page (header title degrades to `<p>` off-home); lightbox is a labeled dialog; toggle buttons carry dynamic `aria-label`s; icon buttons are labeled.
+- **Label legibility floor**: micro-labels are 11px minimum (was 8–10px), and footer/pagination links carry padding for tap-target size.
+- **Theme respects OS preference** by default and never flashes (pre-paint resolution).
+
+---
+
+## 15. Performance
+
+### Measured (Lighthouse, 2026-06-12)
+
+Lab conditions: production builds served from a local static server, Lighthouse defaults (simulated mobile, slow-4G throttling), performance category only. "Before" is branch state prior to the 2026-06-12 UI overhaul; both home and article pages measured, results were identical within 0.1s.
+
+| Metric | Before | After |
+|---|---|---|
+| Performance score | 77–78 | **99** |
+| First Contentful Paint | 3.5 s | **1.1 s** |
+| Largest Contentful Paint | 4.0–4.1 s | **2.1–2.2 s** |
+| Speed Index | 4.6 s | **1.1 s** |
+| CLS | 0 | 0 |
+| Total Blocking Time | 0 ms | 0 ms |
+
+The delta is attributable to the font loading change (§12): eliminating the render-blocking two-origin Google Fonts chain. Treat absolute numbers as lab figures; the delta is the signal.
+
+### Standing optimisations
+
+- Hero image: `<link rel="preload">` + `fetchpriority="high"` + `srcset/sizes` (LCP fetch starts before layout).
+- Card images: first card `fetchpriority="high"`, rest `loading="lazy"`, responsive `sizes`.
+- Sanity CDN serves WebP/AVIF via `auto=format`; widths capped via `fit=max`.
+- Fonts: same-origin, preloaded, `font-display: swap`, unicode-range subsetting.
+- Pagefind JS/CSS load only when search is first opened — zero cost on the critical path.
+- CSS is the only render-blocking resource: PostCSS-processed, minified, fingerprinted (immutable caching).
+- All JS is small and inline; no framework, no hydration, TBT is 0.
+- `theme`/`js` bootstrap runs pre-paint precisely to avoid CLS/FOUC, and CLS is 0.
+
+---
+
+## 16. Deployment — Netlify
 
 **File:** `netlify.toml`
 
@@ -560,11 +696,11 @@ Click a category button: collapses all open panels, then toggles the clicked one
 
 **Trigger sources:**
 1. Git push to the connected branch — Netlify builds automatically.
-2. Sanity publish webhook → Netlify build hook URL — publishing content in Sanity triggers a build without a code push.
+2. *Planned, not yet configured:* a Sanity publish webhook → Netlify build hook, so publishing content triggers a deploy without a code push. Requires creating the build hook in the Netlify dashboard and adding the webhook in Sanity's management console — until then, content changes ship with the next git push or manual deploy.
 
 ---
 
-## 13. Environment Variables
+## 17. Environment Variables
 
 Required in `.env` (local) and Netlify environment settings (production):
 
@@ -575,42 +711,3 @@ Required in `.env` (local) and Netlify environment settings (production):
 | `SANITY_API_TOKEN` | — | Read-only token for the Sanity API |
 
 The token is required because `useCdn: false` is set — CDN access is unauthenticated but fresh API reads require a token.
-
----
-
-## 14. Design System Tokens
-
-Quick reference for all semantic values used throughout templates and CSS:
-
-| Concern | Value |
-|---|---|
-| Background | `bg-paper` = `#F5F2E9` |
-| Primary text | `text-ink` = `#1A1A1A` |
-| Secondary / metadata text | `text-muted` = `#717171` |
-| Font stack | Lora (Google Fonts), Georgia, Times New Roman, serif |
-| Reading column width | `68ch` |
-| Grid max-width | `1400px` |
-| Header height | `h-24` (6rem) |
-| Z-index layers | header: 50, mobile-nav: 200, search-modal: 1000, reading-progress: 10000, lightbox: 10001 |
-| Date format (cards) | `Jan 02, 2006` |
-| Date format (article header) | `January 02, 2006` |
-| Date format (category lists) | `Jan 2006` |
-| Label style | `text-[10px] uppercase tracking-[0.3em–0.5em] font-bold` |
-
----
-
-## 15. README Assessment
-
-The existing `README.md` is well-structured and accurate for a public-facing document. A few gaps worth closing if you rework it:
-
-**Inaccuracies / stale content:**
-- "Performance Baseline (v1.0.0)" — the badge at the top says v1.5.0. Either update the baseline measurements or remove the version label.
-- The Roadmap note (`srcset` / LCP optimisation) is embedded mid-architecture. It reads as a known gap rather than a plan — worth either moving to an Issues/Backlog or framing it separately.
-
-**Missing details:**
-- Security headers (X-Frame-Options, Permissions-Policy, etc.) are not mentioned at all.
-- The `baseURL = '/'` override pattern — local vs. Netlify deploy — is not documented, which could confuse anyone setting up a fork.
-- The stale file cleanup behaviour of `fetch-posts.js` (unpublishing a post removes it from the build) is not mentioned.
-- The fact that `content/posts/*.md` is git-ignored and generated at build time is not called out.
-
-**Overall:** The README is a solid public document. It doesn't need a full rewrite — a targeted pass to fix the v1.0.0 baseline label, add the security headers section, and add a note about generated content would close the gaps without bloating it.
