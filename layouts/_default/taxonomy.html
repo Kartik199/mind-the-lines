@@ -1,14 +1,16 @@
 {{ define "main" }}
 <section class="w-full max-w-[1400px] mx-auto px-6 md:px-12 pt-8 pb-24">
+    {{ $count := len .Data.Pages }}
     <header class="mb-16 border-b border-line pb-10">
-        <span class="label-wide text-muted block mb-4">Section Archive</span>
-        <h1 class="text-5xl font-serif italic text-ink tracking-tight capitalize">{{ .Title }}</h1>
+        <span class="label-wide text-muted block mb-4">Category</span>
+        <h1 class="text-5xl font-serif italic text-ink tracking-tight capitalize mb-3">{{ .Title }}</h1>
+        <p class="label text-muted">{{ $count }} {{ if eq $count 1 }}essay{{ else }}essays{{ end }}</p>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-12 items-start">
         {{ range .Paginator.Pages }}
         <article
-            class="relative flex flex-col group bg-paper border border-line rounded-sm p-8 shadow-card hover:shadow-lifted hover:border-ink/20 hover:-translate-y-1 transition-all duration-500 ease-out">
+            class="relative flex flex-col group bg-paper border border-line border-l-2 rounded-sm p-8 shadow-card hover:shadow-lifted hover:border-ink/20 hover:border-l-ink hover:-translate-y-1 transition-all duration-500 ease-out">
 
             {{ if .Params.heroImage }}
             <div class="mb-8 overflow-hidden rounded-xs aspect-video">
