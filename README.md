@@ -64,18 +64,18 @@ graph LR
 - **Native Theming:** Results are restyled through Pagefind's CSS custom properties to match the site's serif/paper design system in both light and dark themes.
 
 ## Performance Baseline (v1.5.0+)
-Measured 2026-06-12 via Lighthouse (simulated 4G mobile throttling) against local production builds (`npm run build`) served statically. Homepage and single post produced identical results within 0.1 s. "Before" is the same setup prior to self-hosting fonts; the delta comes from removing the render-blocking two-origin Google Fonts chain.
+"After" measured 2026-06-15 via Lighthouse (simulated 4G mobile throttling) against the **live Netlify production deployment**. "Before" is a local production build prior to self-hosting fonts; the gain comes from removing the render-blocking two-origin Google Fonts chain.
 
-| Metric | Before | After |
-|---|---|---|
-| Performance score | 77–78 | **99** |
-| First Contentful Paint | 3.5 s | **1.1 s** |
-| Largest Contentful Paint | 4.0–4.1 s | **2.1–2.2 s** |
-| Speed Index | 4.6 s | **1.1 s** |
-| Total Blocking Time | 0 ms | 0 ms |
-| Cumulative Layout Shift | 0 | 0 |
+| Metric | Before (local, pre-fonts) | After — Home (prod) | After — Article (prod) |
+|---|---|---|---|
+| Performance score | 77–78 | **99** | **98** |
+| First Contentful Paint | 3.5 s | **1.3 s** | **1.2 s** |
+| Largest Contentful Paint | 4.0–4.1 s | **2.1 s** | **2.3 s** |
+| Speed Index | 4.6 s | **2.4 s** | **2.8 s** |
+| Total Blocking Time | 0 ms | 10 ms | 0 ms |
+| Cumulative Layout Shift | 0 | 0 | 0 |
 
-Lab figures — field numbers on the live CDN will differ, but the delta is structural.
+These are now confirmed on the production CDN, not just a local lab build.
 
 **Search:**
 - Search index content (fragment + index data): ~40 KB for 5 posts — scales linearly with content

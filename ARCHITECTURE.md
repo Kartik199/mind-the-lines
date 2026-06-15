@@ -1,7 +1,7 @@
 # Mind the Lines — Architecture & Technical Reference
 
 Personal vault document. All details derived directly from source code.
-Last full audit: 2026-06-12.
+Last full audit: 2026-06-12 (perf numbers and tagline/description split refreshed 2026-06-15).
 
 ---
 
@@ -33,7 +33,7 @@ Last full audit: 2026-06-12.
 
 The visual identity is "paper and ink": a warm off-white ground, near-black serif type (Lora, self-hosted), an SVG-noise grain overlay, and hairline rules. The site ships **light and dark themes** — the dark theme is a warm "lamplight" inversion of the same palette, toggled by a sun/moon button in the header and persisted in `localStorage`.
 
-The blog's tagline, sourced from `hugo.toml`: *"A journal of cinema, society, and the lines that stay."*
+The blog's tagline, sourced from `hugo.toml` (`params.tagline`): *"Party lines, plot lines, punch lines."* — a polyptoton on the title's "Lines," shown in the footer, mobile menu, and About-page header. It is kept separate from `params.description`, the plain sentence that feeds the SEO/social meta tags.
 
 ---
 
@@ -179,7 +179,9 @@ pagerSize = 6          # Posts per page on home + taxonomy views
   posts = "/:slug/"           # Posts live at root level, not /posts/:slug/
 
 [params]
-  description = "A journal of cinema, society, and the lines that stay."
+  description = "Personal essays on books, sport, film, TV, and politics — and the lines where they cross."  # plain SEO/meta sentence
+  tagline = "Party lines, plot lines, punch lines."   # displayed catchphrase (footer, mobile menu, About header)
+  author = "Kartikeyan Sundaresan"                    # copyright line, rendered via {{ with }}
   ogImage = ""
 
 [markup]
@@ -642,20 +644,20 @@ Deliberate decisions, all verified in code:
 
 ## 15. Performance
 
-### Measured (Lighthouse, 2026-06-12)
+### Measured (Lighthouse)
 
-Lab conditions: production builds served from a local static server, Lighthouse defaults (simulated mobile, slow-4G throttling), performance category only. "Before" is branch state prior to the 2026-06-12 UI overhaul; both home and article pages measured, results were identical within 0.1s.
+"After" was re-measured 2026-06-15 against the **live Netlify production deployment** (Lighthouse defaults: simulated mobile, slow-4G throttling, performance category only), confirming the earlier local-lab figures hold on the real CDN. "Before" is branch state prior to the 2026-06-12 UI overhaul, measured locally under the same throttling.
 
-| Metric | Before | After |
-|---|---|---|
-| Performance score | 77–78 | **99** |
-| First Contentful Paint | 3.5 s | **1.1 s** |
-| Largest Contentful Paint | 4.0–4.1 s | **2.1–2.2 s** |
-| Speed Index | 4.6 s | **1.1 s** |
-| CLS | 0 | 0 |
-| Total Blocking Time | 0 ms | 0 ms |
+| Metric | Before (local, pre-fonts) | After — Home (prod) | After — Article (prod) |
+|---|---|---|---|
+| Performance score | 77–78 | **99** | **98** |
+| First Contentful Paint | 3.5 s | **1.3 s** | **1.2 s** |
+| Largest Contentful Paint | 4.0–4.1 s | **2.1 s** | **2.3 s** |
+| Speed Index | 4.6 s | **2.4 s** | **2.8 s** |
+| CLS | 0 | 0 | 0 |
+| Total Blocking Time | 0 ms | 10 ms | 0 ms |
 
-The delta is attributable to the font loading change (§12): eliminating the render-blocking two-origin Google Fonts chain. Treat absolute numbers as lab figures; the delta is the signal.
+The delta is attributable to the font loading change (§12): eliminating the render-blocking two-origin Google Fonts chain. These numbers are production-verified (live CDN), not lab-only.
 
 ### Standing optimisations
 

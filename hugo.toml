@@ -11,7 +11,10 @@ pagerSize = 6
   posts = "/:slug/"
 
 [params]
-  description = "Party lines, plot lines, punch lines."
+  # description = the plain SEO/meta-tag sentence (search results, social cards)
+  # tagline     = the displayed catchphrase (footer, mobile menu, About header)
+  description = "Personal essays on books, sport, film, TV, and politics — and the lines where they cross."
+  tagline = "Party lines, plot lines, punch lines."
   author = "Kartikeyan Sundaresan"
   ogImage = ""
 
