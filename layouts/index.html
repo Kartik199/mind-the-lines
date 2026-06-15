@@ -5,7 +5,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-12 items-start">
         {{ range $index, $page := $paginator.Pages }}
 
-        <article class="relative flex flex-col group bg-paper border border-line rounded-sm p-8 shadow-card hover:shadow-lifted hover:border-ink/20 hover:-translate-y-1 transition-all duration-500 ease-out">
+        <article class="relative flex flex-col group bg-paper border border-line border-l-2 rounded-sm p-8 shadow-card hover:shadow-lifted hover:border-ink/20 hover:border-l-ink hover:-translate-y-1 transition-all duration-500 ease-out">
 
             {{ if $page.Params.heroImage }}
             <div class="mb-8 overflow-hidden rounded-xs aspect-video">
