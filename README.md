@@ -1,8 +1,6 @@
-# Mind the Lines
+# Hugo Editorial
 
 A high-performance, minimalist editorial platform. Architected as a Jamstack solution prioritizing static delivery, semantic search, and editorial flexibility.
-
-[![v1.5.0](https://img.shields.io/badge/Release-v1.5.0-blue)](https://github.com/Kartik199/mind-the-lines/releases/tag/v1.5.0)
 
 ## 1. Technical Philosophy
 The architecture follows a **Static-First, Minimal-JS** philosophy. The goal is to provide a "paper-like" reading experience with sub-second latency and zero unnecessary client-side overhead. Designed for performance-first principles: decoupling content from presentation, leveraging CDNs for global distribution, and minimizing runtime dependencies.
@@ -99,6 +97,13 @@ These are now confirmed on the production CDN, not just a local lab build.
 - Node.js 20+, Hugo 0.145.0+
 - Sanity API token and project ID (configure in `.env`)
 
+### Configuration
+Copy the example config and fill in your details:
+```
+cp hugo.toml.example hugo.toml
+```
+Edit `hugo.toml`: set `title`, `tagline`, `description`, and `author`. Place your OG image at `static/images/og-default.jpg`.
+
 ### Environment Variables
 Create a `.env` file at the project root:
 ```
@@ -110,7 +115,7 @@ SANITY_API_TOKEN=your_api_token
 ### Commands
 ```bash
 # Clone the repo
-git clone https://github.com/Kartik199/mind-the-lines.git
+git clone https://github.com/your-username/your-repo-name.git
 
 # Install dependencies
 npm install

@@ -16,7 +16,7 @@ pagerSize = 6
   description = "Personal essays on books, sport, film, TV, and politics — and the lines where they cross."
   tagline = "Party lines, plot lines, punch lines."
   author = "Kartikeyan Sundaresan"
-  ogImage = "/images/og-default.jpg"
+  ogImage = "/images/og-default.png"
 
 [markup]
   [markup.goldmark]
