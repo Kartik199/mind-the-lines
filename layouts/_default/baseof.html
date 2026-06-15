@@ -18,7 +18,8 @@
             root.setAttribute('data-theme', theme);
         })();
     </script>
-    <meta name="theme-color" content="#F5F2E9">
+    <meta name="theme-color" content="#EDE9D8">
+    <link rel="alternate" type="application/rss+xml" title="{{ .Site.Title }}" href="/index.xml">
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
@@ -115,7 +116,7 @@
             document.getElementById('mobile-menu-open')?.addEventListener('click', () => toggleUI(mobileNav, 'mobile-menu-active', true));
             document.getElementById('mobile-nav-close')?.addEventListener('click', () => toggleUI(mobileNav, 'mobile-menu-active', false));
 
-            const themeColors = { light: '#F5F2E9', dark: '#1A1814' };
+            const themeColors = { light: '#EDE9D8', dark: '#1A1814' };
             const themeMeta = document.querySelector('meta[name="theme-color"]');
 
             const applyThemeUI = () => {

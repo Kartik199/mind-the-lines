@@ -34,7 +34,7 @@
             <nav class="hidden md:flex items-center gap-10">
                 <div class="relative group cursor-pointer py-4" tabindex="0">
                     <span
-                        class="label text-muted group-hover:text-ink group-focus-within:text-ink transition-colors flex items-center gap-2">
+                        class="label {{ if strings.HasPrefix .RelPermalink "/categories" }}text-ink{{ else }}text-muted{{ end }} group-hover:text-ink group-focus-within:text-ink transition-colors flex items-center gap-2">
                         Categories <span
                             class="text-[8px] opacity-40 group-hover:rotate-180 group-focus-within:rotate-180 transition-transform duration-300">▼</span>
                     </span>
@@ -50,7 +50,7 @@
                     </div>
                 </div>
                 <a href="/about"
-                    class="label text-muted hover:text-ink transition-colors">About</a>
+                    class="label {{ if strings.HasPrefix .RelPermalink "/about" }}text-ink{{ else }}text-muted hover:text-ink{{ end }} transition-colors">About</a>
             </nav>
 
             <button
