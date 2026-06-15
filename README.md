@@ -36,7 +36,7 @@ graph LR
     end
 
     B -- "GROQ Queries" --> C
-    B -. "Publish Webhook (planned)" .-> F
+    B -- "Publish Webhook" --> F
 
     style B fill:#f96,stroke:#333,stroke-width:1px
     style D fill:#69f,stroke:#333,stroke-width:1px
@@ -48,7 +48,7 @@ graph LR
 - **Schemas**: Posts include title, slug, published date, summary, categories (referencing category documents), hero image, and rich body content (portable text blocks, lists, images, YouTube embeds, inline quotes with styles).
 - **Image Optimization:** Leveraging Sanity's Asset Pipeline to serve transformed, CDN-cached images with auto-formatting. Hero images are pre-built at three widths (800w / 1200w / 1600w) at fetch time, written into frontmatter as `srcset` strings, and delivered to templates with `fetchpriority="high"` and `<link rel="preload">` for optimal LCP.
 - **Generated Content:** `content/posts/*.md` is produced by `fetch-posts.js` on every build and is git-ignored — Sanity is the single source of truth. Unpublishing a post in Sanity removes its file on the next build (stale-file cleanup).
-- **Publish Webhook (planned):** A Sanity publish webhook → Netlify build hook will trigger rebuilds on content changes without a code push. Until configured, content ships with the next git push or manual deploy.
+- **Publish Webhook:** A Sanity publish webhook triggers a Netlify build hook on content publish — new posts deploy automatically without a code push.
 
 ### 3.2 Static Site Generation (Hugo)
 - **Build-time Integration:** Sanity data is consumed during the build process via `fetch-posts.js`, a custom Node.js script that converts GROQ results to Hugo-compatible Markdown with YAML frontmatter.
@@ -130,4 +130,4 @@ npm run build
 Note: search in dev serves the index from the last `npm run build` (Pagefind doesn't run in dev mode) — run a build first if search 404s.
 
 ## 5. Deployment
-Configured for Netlify with automated builds triggered on every git push (Sanity publish-event builds are planned via webhook). Publish directory: `public/`. Environment variables pin Hugo and Node versions for build consistency, and security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) are applied to all routes via `netlify.toml`. The static-first approach ensures global CDN distribution with minimal server overhead.
+Configured for Netlify with automated builds triggered on every git push and on Sanity content publish (via Sanity → Netlify build hook webhook). Publish directory: `public/`. Environment variables pin Hugo and Node versions for build consistency, and security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) are applied to all routes via `netlify.toml`. The static-first approach ensures global CDN distribution with minimal server overhead.
