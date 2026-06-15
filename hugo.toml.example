@@ -1,0 +1,27 @@
+baseURL = '/'  # Relative for local dev; overridden at deploy time (e.g. Netlify's $URL)
+languageCode = 'en-us'
+title = 'Your Blog Name'
+pagerSize = 6
+
+[taxonomies]
+  category = "categories"
+
+[permalinks]
+  categories = "/categories/:slug/"
+  posts = "/:slug/"
+
+[params]
+  # description = plain SEO/meta sentence (search results, social cards)
+  # tagline     = displayed catchphrase (footer, mobile menu, About header)
+  description = "Your site description for SEO and social cards."
+  tagline = "Your displayed catchphrase."
+  author = "Your Name"
+  ogImage = "/images/og-default.jpg"  # Place your OG image at static/images/og-default.jpg
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true  # Required: fetch-posts.js emits raw HTML in content
+
+[frontmatter]
+  removePathAccents = true  # Graceful handling of special characters in titles
