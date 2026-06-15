@@ -5,11 +5,11 @@
                 {{ if .IsHome }}
                 <h1
                     class="text-2xl md:text-3xl font-serif italic text-ink tracking-tight group-hover:text-muted transition-colors">
-                    Mind the Lines
+                    {{ .Site.Title }}
                 </h1>
                 {{ else }}
                 <p class="text-2xl md:text-3xl font-serif italic text-ink tracking-tight group-hover:text-muted transition-colors">
-                    Mind the Lines
+                    {{ .Site.Title }}
                 </p>
                 {{ end }}
             </a>
@@ -90,7 +90,7 @@
      block for fixed descendants, which used to clip this overlay to the header bar */}}
 <div id="mobile-nav" class="fixed inset-0 z-[200] hidden bg-paper p-8 overflow-y-auto" data-pagefind-ignore>
     <div class="flex justify-between items-center mb-16">
-        <p class="font-serif italic text-xl text-ink">Mind the Lines</p>
+        <p class="font-serif italic text-xl text-ink">{{ .Site.Title }}</p>
         <button id="mobile-nav-close" class="label text-muted cursor-pointer">Close</button>
     </div>
     <nav class="flex flex-col gap-8">

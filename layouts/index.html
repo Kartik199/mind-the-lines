@@ -2,12 +2,6 @@
 <section class="w-full max-w-[1400px] mx-auto px-6 md:px-12 pt-8 pb-24">
     {{ $paginator := .Paginate .Site.RegularPages }}
 
-    {{ if eq $paginator.PageNumber 1 }}
-    <header class="mb-16 md:mb-20 pt-4 text-center reveal-on-scroll">
-        <p class="font-serif italic text-xl md:text-2xl text-muted text-balance">{{ .Site.Params.description }}</p>
-    </header>
-    {{ end }}
-
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-12 items-start">
         {{ range $index, $page := $paginator.Pages }}
 

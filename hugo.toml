@@ -11,7 +11,8 @@ pagerSize = 6
   posts = "/:slug/"
 
 [params]
-  description = "A journal of cinema, society, and the lines that stay."
+  description = "Party lines, plot lines, punch lines."
+  author = "Kartikeyan Sundaresan"
   ogImage = ""
 
 [markup]
